@@ -14,13 +14,13 @@
 <main class="app">
 <section id="home">
   <div class="hero"><div class="eyebrow">Belajar lebih terarah</div><h1>Pahami materinya, latihan, lalu cek hasilnya.</h1><p>Materi disusun per kelas, mata pelajaran, dan bab agar anak bisa belajar sedikit demi sedikit.</p></div>
-  <div id="bootStatus" class="boot"><span class="boot-dot"></span><div><h3>Menyiapkan aplikasi…</h3><p id="bootText">Memuat modul utama PahamBelajar.</p><div class="version">Build check: PB-20260827-01</div></div></div>
+  <div id="bootStatus" class="boot"><span class="boot-dot"></span><div><h3>Menyiapkan aplikasi…</h3><p id="bootText">Memuat modul utama PahamBelajar.</p><div class="version">Build check: PB-20260827-02</div></div></div>
   <div id="catalog"></div>
 </section>
 </main>
 <script>
 (()=>{
- const VERSION='PB-20260827-01';
+ const VERSION='PB-20260827-02';
  const status=document.getElementById('bootStatus');
  const text=document.getElementById('bootText');
  function setState(kind,msg){status.className='boot '+kind;text.textContent=msg;}
@@ -28,13 +28,13 @@
  async function boot(){
   try{
    await load('/pahambelajar-enhancements.js',5000);
-   setState('ok','Modul utama berhasil dimuat. Menyiapkan profil dan kurikulum…');
+   setState('ok','Modul utama aktif. Profil akan tampil langsung; materi dimuat di background.');
    const extras=['/child-ux.js','/math-engine.js','/remedial-feedback.js'];
    for(const f of extras){try{await load(f,3500)}catch(e){console.warn('Optional module failed',f,e)}}
-   setTimeout(()=>{if(document.querySelector('.pb-overlay')||document.getElementById('pbCurriculum'))status.style.display='none';},500);
+   setTimeout(()=>{if(document.querySelector('.pb-overlay')||document.getElementById('pbCurriculum'))status.style.display='none';},700);
   }catch(e){
    console.error('PahamBelajar boot failed',e);
-   setState('error','Modul utama gagal dimuat dari server. Halaman HTML sudah aktif, tetapi aplikasi interaktif belum berjalan.');
+   setState('error','Modul utama gagal dimuat dari server. Halaman HTML aktif, tetapi aplikasi interaktif belum berjalan.');
   }
  }
  window.addEventListener('error',e=>console.error('Window error',e.error||e.message));
