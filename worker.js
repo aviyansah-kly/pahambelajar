@@ -7,9 +7,9 @@ export default {
     if ((url.pathname === '/' || url.pathname.endsWith('.html')) && type.includes('text/html')) {
       let html = await response.text();
       if (!html.includes('pahambelajar-enhancements.js')) {
-        html = html.replace('</body>', '<script src="/pahambelajar-enhancements.js"></script><script src="/math-grade1.js"></script><script src="/math-engine.js"></script></body>');
+        html = html.replace('</body>', '<script src="/pahambelajar-enhancements.js"></script><script src="/child-ux.js"></script><script src="/math-engine.js"></script></body>');
       } else {
-        if (!html.includes('math-grade1.js')) html = html.replace('</body>', '<script src="/math-grade1.js"></script></body>');
+        if (!html.includes('child-ux.js')) html = html.replace('</body>', '<script src="/child-ux.js"></script></body>');
         if (!html.includes('math-engine.js')) html = html.replace('</body>', '<script src="/math-engine.js"></script></body>');
       }
       const headers = new Headers(response.headers);
