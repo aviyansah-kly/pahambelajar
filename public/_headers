@@ -1,4 +1,12 @@
 /*
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+/*.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Content-Type: application/javascript; charset=utf-8
+
+/data/*
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
