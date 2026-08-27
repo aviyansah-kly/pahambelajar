@@ -6,39 +6,43 @@
 <meta name="theme-color" content="#5965d8">
 <title>PahamBelajar — Belajar per Bab</title>
 <style>
-*{box-sizing:border-box}:root{--bg:#f6f7fb;--ink:#1d2433;--muted:#667085;--line:#e5e7eb;--primary:#5965d8}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.top{position:sticky;top:0;z-index:50;background:#fffffff2;border-bottom:1px solid var(--line)}.topin{max-width:1080px;margin:auto;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}.brand{font-weight:900;font-size:18px}.brand span{color:var(--primary)}.small{font-size:13px;color:var(--muted)}.app{max-width:1080px;margin:auto;padding:0 16px 56px}.hero{margin:24px 0 18px;border-radius:28px;padding:28px;background:linear-gradient(135deg,#5360d9,#7c3aed);color:#fff}.hero .eyebrow{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;opacity:.86}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.08;margin:8px 0 10px}.hero p{margin:0;line-height:1.6;color:#ede9fe}.boot{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:12px;display:flex;gap:12px;align-items:flex-start}.boot-dot{width:11px;height:11px;border-radius:999px;background:#5965d8;margin-top:5px;flex:none}.boot h3{margin:0 0 4px;font-size:16px}.boot p{margin:0;color:var(--muted);line-height:1.5}.boot.error{border-color:#fecaca;background:#fff7f7}.boot.error .boot-dot{background:#dc2626}.boot.ok{border-color:#bbf7d0;background:#f0fdf4}.boot.ok .boot-dot{background:#16a34a}.version{margin-top:8px;font-size:12px;color:#98a2b3}#catalog{display:none}@media(max-width:700px){.hero{padding:22px 20px;margin-top:16px;border-radius:22px}.app{padding-left:14px;padding-right:14px}}
+*{box-sizing:border-box}:root{--bg:#f4f5fb;--ink:#1d2433;--muted:#667085;--line:#e5e7eb;--primary:#5965d8;--navy:#172033}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select{font:inherit}.top{background:#fff;border-bottom:1px solid var(--line)}.topin{max-width:1080px;margin:auto;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{font-weight:900;font-size:18px}.brand span{color:var(--primary)}.small{font-size:13px;color:var(--muted)}.app{max-width:1080px;margin:auto;padding:24px 16px 56px}.hero{border-radius:28px;padding:28px;background:linear-gradient(135deg,#5360d9,#7c3aed);color:#fff;margin-bottom:18px}.hero .eyebrow,.kicker{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.08;margin:8px 0 10px}.hero p{margin:0;line-height:1.6;color:#ede9fe}.setup-screen{position:fixed;inset:0;z-index:100;background:linear-gradient(135deg,#eef2ff,#f5f3ff);display:grid;place-items:center;padding:20px}.setup-screen[hidden]{display:none}.card{width:min(560px,100%);background:#fff;border:1px solid var(--line);border-radius:28px;padding:26px;box-shadow:0 24px 70px #0f172a20}.kicker{color:var(--primary)}.card h1{font-size:30px;line-height:1.15;margin:7px 0 8px}.card p{color:var(--muted);line-height:1.55;margin:0 0 18px}.field{margin:14px 0}.field label{display:block;font-size:14px;font-weight:800;margin-bottom:7px}.field input,.field select{width:100%;border:1px solid var(--line);border-radius:14px;padding:13px 14px;background:#fff;color:var(--ink)}.start,.btn{border:0;border-radius:13px;padding:13px 15px;font-weight:850;cursor:pointer}.start{width:100%;background:var(--primary);color:#fff}.btn{background:var(--navy);color:#fff}.error{font-size:13px;color:#b42318;margin-top:9px;min-height:18px}.homehead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:12px 0 16px}.homehead h2{margin:0;font-size:30px}.profile{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 12px;font-weight:800;cursor:pointer}.state{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;color:var(--muted)}.state b{display:block;color:var(--ink);margin-bottom:5px}.subject-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.subject{background:#fff;border:1px solid var(--line);border-radius:20px;padding:17px}.subject h3{margin:0 0 10px}.chapter{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-top:1px solid #eef0f3}.chapter:first-of-type{border-top:0}.chapter button{min-height:44px;border:0;background:#eef0ff;color:#4f46e5;border-radius:11px;padding:9px 12px;font-weight:800;cursor:pointer}.semester{display:flex;gap:8px;margin:10px 0 4px}.semester button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 12px;font-weight:800;cursor:pointer}.semester button.on{background:var(--navy);color:#fff}.version{font-size:11px;color:#98a2b3;margin-top:10px}@media(max-width:760px){.subject-grid{grid-template-columns:1fr}.hero{padding:22px 20px}.app{padding:16px 14px 48px}.card h1{font-size:26px}}
 </style>
 </head>
 <body>
-<header class="top"><div class="topin"><div class="brand">Paham<span>Belajar</span></div><div class="small">Belajar per bab</div></div></header>
+<header class="top"><div class="topin"><div class="brand">Paham<span>Belajar</span></div><div id="topRight" class="small">Belajar per bab</div></div></header>
 <main class="app">
-<section id="home">
-  <div class="hero"><div class="eyebrow">Belajar lebih terarah</div><h1>Pahami materinya, latihan, lalu cek hasilnya.</h1><p>Materi disusun per kelas, mata pelajaran, dan bab agar anak bisa belajar sedikit demi sedikit.</p></div>
-  <div id="bootStatus" class="boot"><span class="boot-dot"></span><div><h3>Menyiapkan aplikasi…</h3><p id="bootText">Memuat modul utama PahamBelajar.</p><div class="version">Build check: PB-20260827-03</div></div></div>
-  <div id="catalog"></div>
-</section>
+  <section class="hero"><div class="eyebrow">Belajar lebih terarah</div><h1>Pahami materinya, latihan, lalu cek hasilnya.</h1><p>Materi disusun per kelas, mata pelajaran, dan bab agar anak bisa belajar sedikit demi sedikit.</p></section>
+  <section id="homeContent"></section>
 </main>
+<div id="setup" class="setup-screen" hidden>
+  <div class="card">
+    <div class="kicker">Setup oleh Orang Tua</div>
+    <h1>Atur profil belajar anak</h1>
+    <p>Isi sekali saja. Setelah itu anak langsung masuk ke materi sesuai kelasnya.</p>
+    <div class="field"><label for="name">Nama panggilan</label><input id="name" maxlength="24" autocomplete="off" placeholder="Contoh: Raka"></div>
+    <div class="field"><label for="school">Jenis sekolah</label><select id="school"><option value="">Pilih jenis sekolah</option><option value="sd">SD</option><option value="mi">MI</option><option value="sdit">SDIT</option></select></div>
+    <div class="field"><label for="grade">Kelas</label><select id="grade"><option value="">Pilih kelas</option><option value="1">Kelas 1</option><option value="2">Kelas 2</option><option value="3">Kelas 3</option><option value="4">Kelas 4</option><option value="5">Kelas 5</option><option value="6">Kelas 6</option></select></div>
+    <button id="start" class="start">Mulai Belajar →</button>
+    <div id="formError" class="error"></div>
+    <div class="version">Build PB-20260827-04</div>
+  </div>
+</div>
 <script>
 (()=>{
- const VERSION='PB-20260827-03';
- const status=document.getElementById('bootStatus');
- const text=document.getElementById('bootText');
- function setState(kind,msg){status.className='boot '+kind;text.textContent=msg;}
- function load(src,timeout){return new Promise((resolve,reject)=>{const s=document.createElement('script');const timer=setTimeout(()=>{s.remove();reject(new Error('timeout'))},timeout);s.src=src+'?v='+encodeURIComponent(VERSION);s.async=true;s.onload=()=>{clearTimeout(timer);resolve()};s.onerror=()=>{clearTimeout(timer);reject(new Error('error'))};document.head.appendChild(s);});}
- async function boot(){
-  try{
-   await load('/pahambelajar-enhancements.js',5000);
-   setState('ok','Modul utama aktif. Profil dan daftar materi disiapkan.');
-   const extras=['/child-ux.js','/remedial-feedback.js'];
-   for(const f of extras){try{await load(f,3500)}catch(e){console.warn('Optional module failed',f,e)}}
-   setTimeout(()=>{if(document.querySelector('.pb-overlay')||document.getElementById('pbCurriculum'))status.style.display='none';},700);
-  }catch(e){
-   console.error('PahamBelajar boot failed',e);
-   setState('error','Modul utama gagal dimuat dari server. Halaman HTML aktif, tetapi aplikasi interaktif belum berjalan.');
-  }
- }
- window.addEventListener('error',e=>console.error('Window error',e.error||e.message));
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+const KEY='pahambelajar_profile_v2';
+let curriculum=null,semester=1,controller=null;
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function profile(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch{return null}}
+function save(p){localStorage.setItem(KEY,JSON.stringify(p))}
+function openSetup(edit=false){const p=profile();$('name').value=edit&&p?p.name||'':'';$('school').value=edit&&p?p.school||'':'';$('grade').value=edit&&p?String(p.grade||''):'';$('formError').textContent='';$('setup').hidden=false}
+function updateTop(){const p=profile();if(!p)return;$('topRight').innerHTML=`<button id="editProfile" class="profile">👤 ${esc(p.name)} · Kelas ${p.grade}</button>`;$('editProfile').onclick=()=>openSetup(true)}
+function subjectsFor(p){if(!curriculum)return[];const g=String(p.grade),s=String(semester);let out=Object.entries(curriculum?.sd?.[g]?.[s]||{}).map(([name,chapters])=>({name,chapters}));if(p.school==='mi'||p.school==='sdit')out=out.concat(Object.entries(curriculum?.mi_add?.[g]?.[s]||{}).map(([name,chapters])=>({name,chapters})));return out}
+function render(){const p=profile();if(!p){openSetup(false);return}updateTop();if(!curriculum){$('homeContent').innerHTML=`<div class="homehead"><div><h2>Hai, ${esc(p.name)} 👋</h2><div class="small">Kelas ${p.grade} · ${esc(p.school.toUpperCase())}</div></div></div><div class="state"><b>Profil sudah siap ✅</b><span id="loadText">Daftar materi belum dimuat.</span><br><button id="loadCurriculum" class="btn" style="margin-top:12px">Tampilkan materi</button></div>`;$('loadCurriculum').onclick=loadCurriculum;return}const subs=subjectsFor(p);$('homeContent').innerHTML=`<div class="homehead"><div><h2>Hai, ${esc(p.name)} 👋</h2><div class="small">Kelas ${p.grade} · ${esc(p.school.toUpperCase())}</div></div><div class="semester"><button class="${semester===1?'on':''}" data-sem="1">Semester 1</button><button class="${semester===2?'on':''}" data-sem="2">Semester 2</button></div></div><div class="subject-grid">${subs.map(s=>`<article class="subject"><h3>${esc(s.name)}</h3>${s.chapters.map((c,i)=>`<div class="chapter"><span>${i+1}. ${esc(c)}</span><button type="button">Buka</button></div>`).join('')}</article>`).join('')}</div>`;document.querySelectorAll('[data-sem]').forEach(b=>b.onclick=()=>{semester=Number(b.dataset.sem);render()})}
+async function loadCurriculum(){if(controller)return;const btn=$('loadCurriculum'),txt=$('loadText');if(btn)btn.disabled=true;if(txt)txt.textContent='Memuat daftar materi…';controller=new AbortController();const timer=setTimeout(()=>controller.abort(),5000);try{const r=await fetch('/data/curriculum-v1.json?v=PB-20260827-04',{cache:'no-store',signal:controller.signal});if(!r.ok)throw new Error('HTTP '+r.status);curriculum=await r.json();render()}catch(e){console.error(e);if(txt)txt.textContent='Materi belum berhasil dimuat. Coba lagi.';if(btn){btn.disabled=false;btn.textContent='Coba Lagi'}}finally{clearTimeout(timer);controller=null}}
+$('start').onclick=()=>{const name=$('name').value.trim(),school=$('school').value,grade=Number($('grade').value);if(!name)return $('formError').textContent='Isi nama panggilan dulu ya.';if(!school)return $('formError').textContent='Pilih jenis sekolah dulu ya.';if(!grade)return $('formError').textContent='Pilih kelas dulu ya.';const old=profile();save({id:old?.id||('profile_'+Math.random().toString(36).slice(2,10)),name,school,grade,cambridge:false});$('setup').hidden=true;render()};
+const p=profile();if(p)render();else openSetup(false);
 })();
 </script>
 </body>
