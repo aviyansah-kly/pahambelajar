@@ -1,4 +1,5 @@
 import baseWorker from './worker.js';
+import { buildMathBank } from './math-bank-runtime.js';
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -14,6 +15,17 @@ async function loadCurriculum(request, env) {
   const response = await env.ASSETS.fetch(new Request(new URL('/data/core-curriculum-v2.json', request.url)));
   if (!response.ok) throw new Error('core-curriculum-v2.json tidak tersedia');
   return response.json();
+}
+
+async function runtimeMathBank(request, env, grade) {
+  try {
+    const curriculum = await loadCurriculum(request, env);
+    const bank = buildMathBank(curriculum, grade);
+    if (!bank) return json({ error: 'Kelas tidak ditemukan.' }, 404);
+    return json(bank);
+  } catch (error) {
+    return json({ error: error.message || 'Bank Matematika gagal dibangun.' }, 500);
+  }
 }
 
 async function callGeneration(request, env, input) {
@@ -50,8 +62,7 @@ function validateParams(url) {
   const count = Math.min(Math.max(Number(url.searchParams.get('count') || 10), 1), 12);
   const difficulty = Math.min(Math.max(Number(url.searchParams.get('difficulty') || 1), 1), 3);
   const details = url.searchParams.get('details') === '1';
-
-  if (![1, 2, 3].includes(grade)) throw new Error('grade untuk overnight bank harus 1, 2, atau 3');
+  if (![1, 2, 3].includes(grade)) throw new Error('grade harus 1, 2, atau 3');
   if (![1, 2].includes(semester)) throw new Error('semester harus 1 atau 2');
   if (!chapterId) throw new Error('chapter_id wajib diisi');
   return { grade, semester, chapterId, count, difficulty, details };
@@ -59,27 +70,17 @@ function validateParams(url) {
 
 async function chapterQualityReport(request, env) {
   if (!env.GEMINI_API_KEY) return json({ error: 'GEMINI_API_KEY belum dikonfigurasi.' }, 503);
-
   let params;
-  try {
-    params = validateParams(new URL(request.url));
-  } catch (error) {
-    return json({ error: error.message }, 400);
-  }
-
+  try { params = validateParams(new URL(request.url)); }
+  catch (error) { return json({ error: error.message }, 400); }
   try {
     const curriculum = await loadCurriculum(request, env);
     const gradeMeta = curriculum?.grades?.[String(params.grade)];
     const chapters = gradeMeta?.semesters?.[String(params.semester)]?.Matematika || [];
     const chapter = chapters.find(item => item.id === params.chapterId);
     if (!chapter) return json({ error: 'chapter_id tidak ditemukan pada kurikulum Matematika kelas/semester tersebut.' }, 404);
-
     const rows = [];
-    let requested = 0;
-    let approved = 0;
-    let needsReview = 0;
-    let rejected = 0;
-
+    let requested = 0, approved = 0, needsReview = 0, rejected = 0;
     for (const skill of chapter.skills || []) {
       const payload = await callGeneration(request, env, {
         grade: params.grade,
@@ -89,7 +90,6 @@ async function chapterQualityReport(request, env) {
         difficulty: params.difficulty,
         count: params.count
       });
-
       const row = {
         skill,
         requested: payload.summary?.requested || params.count,
@@ -98,59 +98,36 @@ async function chapterQualityReport(request, env) {
         rejected: payload.summary?.rejected || 0,
         target_met: (payload.summary?.approved || 0) >= 8
       };
-
       requested += row.requested;
       approved += row.approved;
       needsReview += row.needs_review;
       rejected += row.rejected;
-
-      if (params.details) {
-        row.approved_questions = payload.approved || [];
-        row.needs_review_questions = payload.needs_review || [];
-        row.rejected_questions = payload.rejected || [];
-      }
+      if (params.details) Object.assign(row, {
+        approved_questions: payload.approved || [],
+        needs_review_questions: payload.needs_review || [],
+        rejected_questions: payload.rejected || []
+      });
       rows.push(row);
     }
-
     const skillsReady = rows.filter(row => row.target_met).length;
     return json({
       ok: true,
       report: 'chapter-quality-v1',
-      models: {
-        generator: 'gemini-3.1-flash-lite',
-        reviewer: 'gemini-3.5-flash'
-      },
+      models: { generator: 'gemini-3.1-flash-lite', reviewer: 'gemini-3.5-flash' },
       scope: {
         grade: params.grade,
         semester: params.semester,
         subject: 'Matematika',
         phase: gradeMeta?.phase || '',
-        chapter: {
-          id: chapter.id,
-          title: chapter.title,
-          confidence: chapter.confidence,
-          skills: chapter.skills?.length || 0
-        }
+        chapter: { id: chapter.id, title: chapter.title, confidence: chapter.confidence, skills: chapter.skills?.length || 0 }
       },
       publish: false,
       target: 'minimum 8 approved-auto questions per skill',
-      summary: {
-        skills: rows.length,
-        skills_ready: skillsReady,
-        requested,
-        approved,
-        needs_review: needsReview,
-        rejected,
-        ready_for_curation: rows.length > 0 && skillsReady === rows.length
-      },
+      summary: { skills: rows.length, skills_ready: skillsReady, requested, approved, needs_review: needsReview, rejected, ready_for_curation: rows.length > 0 && skillsReady === rows.length },
       results: rows
     });
   } catch (error) {
-    return json({
-      error: error.message || 'Chapter quality report gagal.',
-      status: error.status,
-      detail: String(error.detail || '').slice(0, 500)
-    }, error.status && error.status >= 400 && error.status < 600 ? error.status : 502);
+    return json({ error: error.message || 'Chapter quality report gagal.', status: error.status, detail: String(error.detail || '').slice(0, 500) }, error.status && error.status >= 400 && error.status < 600 ? error.status : 502);
   }
 }
 
@@ -161,24 +138,10 @@ async function overnightCoverage(request, env) {
     for (const grade of [1, 2, 3]) {
       for (const semester of [1, 2]) {
         const chapters = curriculum?.grades?.[String(grade)]?.semesters?.[String(semester)]?.Matematika || [];
-        coverage.push({
-          grade,
-          semester,
-          chapters: chapters.map(chapter => ({
-            id: chapter.id,
-            title: chapter.title,
-            confidence: chapter.confidence,
-            skills: chapter.skills?.length || 0
-          }))
-        });
+        coverage.push({ grade, semester, chapters: chapters.map(chapter => ({ id: chapter.id, title: chapter.title, confidence: chapter.confidence, skills: chapter.skills?.length || 0 })) });
       }
     }
-    return json({
-      ok: true,
-      scope: 'Matematika Grades 1-3 Semesters 1-2',
-      publish: false,
-      coverage
-    });
+    return json({ ok: true, scope: 'Matematika Grades 1-3 Semesters 1-2', publish: false, coverage });
   } catch (error) {
     return json({ error: error.message || 'Coverage gagal.' }, 502);
   }
@@ -187,12 +150,10 @@ async function overnightCoverage(request, env) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.pathname === '/api/ai/chapter-quality-report' && request.method === 'GET') {
-      return chapterQualityReport(request, env);
-    }
-    if (url.pathname === '/api/ai/overnight-coverage' && request.method === 'GET') {
-      return overnightCoverage(request, env);
-    }
+    const bankMatch = url.pathname.match(/^\/data\/question-bank-math-g([123])-v2\.json$/);
+    if (bankMatch && request.method === 'GET') return runtimeMathBank(request, env, Number(bankMatch[1]));
+    if (url.pathname === '/api/ai/chapter-quality-report' && request.method === 'GET') return chapterQualityReport(request, env);
+    if (url.pathname === '/api/ai/overnight-coverage' && request.method === 'GET') return overnightCoverage(request, env);
     return baseWorker.fetch(request, env);
   }
 };
