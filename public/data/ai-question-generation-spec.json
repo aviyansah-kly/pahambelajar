@@ -1,7 +1,7 @@
 {
-  "version": "1.1",
-  "provider_hint": "Gemini API free tier for development",
-  "purpose": "Generate candidate questions from PahamBelajar curriculum skills; never publish AI output without validation.",
+  "version": "1.2",
+  "provider_hint": "Gemini API for development; current preview model gemini-3.1-flash-lite",
+  "purpose": "Generate candidate questions from PahamBelajar curriculum skills; never publish AI output without validation and review.",
   "input_schema": {
     "grade": "number",
     "phase": "A|B|C",
@@ -22,6 +22,8 @@
     "o": "array, for choice only",
     "a": "answer index for choice",
     "why": "short child-friendly explanation",
+    "source": "gemini-draft",
+    "review_status": "candidate|rejected-auto",
     "validation": {
       "curriculum_aligned": "boolean",
       "single_correct_answer": "boolean",
@@ -31,17 +33,37 @@
   },
   "prompt_rules": [
     "Use only the supplied chapter and skill. Do not introduce material from a higher grade.",
-    "Use simple Indonesian suitable for the stated elementary grade.",
+    "Use simple, natural Indonesian suitable for the stated elementary grade.",
     "Default to multiple choice with 4 concise options for the MVP.",
     "Avoid free-text answers when the same skill can be assessed reliably with tap-based choices.",
     "Use free-text only when writing the answer itself is the learning objective, and always provide an explicit example of the expected format.",
     "Every multiple-choice question must have exactly one unambiguous correct answer.",
+    "Questions in one batch must vary in structure and should not merely swap numbers in the same sentence.",
     "Every question must include why: explain the reasoning in 1-3 short sentences, not merely repeat the answer.",
     "For mathematics, compute the correct result independently before creating distractors.",
+    "Use terminology consistently: nilai tempat means ratusan/puluhan/satuan; nilai angka means the numeric value of the digit such as 300, 60, or 7.",
+    "Prefer mathematical place-value terms in explanations instead of relying on left/right positional wording.",
     "Distractors must reflect plausible child mistakes but must not be misleading or ambiguous.",
+    "Keep capitalization and punctuation consistent across answer options.",
     "Avoid trick questions, culturally obscure references, and unnecessary reading load.",
     "Return JSON only and follow the schema exactly."
   ],
+  "auto_filter_policy": {
+    "reject_when": [
+      "duplicate question stem after normalization",
+      "duplicate answer options after normalization",
+      "question stem is too short or too long for the MVP",
+      "explanation is too weak or too short",
+      "place-value explanation relies on directional left/right wording instead of mathematical terms"
+    ],
+    "important_limit": "Automatic filtering checks structure and obvious quality issues. It does not replace mathematical truth validation or human/editor review."
+  },
+  "chapter_candidate_policy": {
+    "pilot": "Grade 3 Math Chapter 1 generates 6 candidates for each of 5 skills, for a 30-question first-pass batch.",
+    "publish": false,
+    "after_pilot": "Review accepted candidates by skill. For skills that pass quality review, expand to roughly 12-16 candidates per skill before selecting an 8-12 question live bank.",
+    "live_bank_rule": "Only reviewed/approved questions can enter the live question bank. Gemini output is never served directly to children."
+  },
   "ux_policy": {
     "default_answer_interaction": "tap one answer",
     "choice_behavior": "Selecting an option immediately locks and checks the answer; do not show a separate Kunci Jawaban button.",
