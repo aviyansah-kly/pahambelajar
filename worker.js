@@ -1,6 +1,5 @@
-const MODEL = 'gemini-2.5-flash-lite';
-const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta';
-const GEMINI_URL = `${GEMINI_BASE}/models/${MODEL}:generateContent`;
+const MODEL = 'gemini-3.1-flash-lite';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 const questionSchema = {
   type: 'OBJECT',
@@ -96,21 +95,7 @@ function validateQuestions(payload, input) {
   });
 }
 
-async function geminiModels(env) {
-  if (!env.GEMINI_API_KEY) return json({ error: 'GEMINI_API_KEY belum dikonfigurasi.' }, 503);
-  const response = await fetch(`${GEMINI_BASE}/models`, { headers: { 'x-goog-api-key': env.GEMINI_API_KEY } });
-  const text = await response.text();
-  let payload;
-  try { payload = JSON.parse(text); } catch { payload = { raw: text.slice(0, 1200) }; }
-  if (!response.ok) return json({ ok: false, status: response.status, upstream: payload }, 502);
-  const models = (payload.models || [])
-    .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
-    .map(m => ({ name: m.name, displayName: m.displayName, methods: m.supportedGenerationMethods }))
-    .slice(0, 50);
-  return json({ ok: true, configuredModel: MODEL, configuredModelAvailable: models.some(m => m.name === `models/${MODEL}`), models });
-}
-
-async function generateQuestions(request, env, debug = false) {
+async function generateQuestions(request, env) {
   if (!env.GEMINI_API_KEY) return json({ error: 'GEMINI_API_KEY belum dikonfigurasi di Cloudflare Worker.' }, 503);
   let body;
   try { body = await request.json(); } catch { return json({ error: 'Body JSON tidak valid.' }, 400); }
@@ -138,9 +123,12 @@ async function generateQuestions(request, env, debug = false) {
   if (!geminiResponse.ok) {
     const detail = await geminiResponse.text();
     console.error('Gemini error', geminiResponse.status, detail);
-    let upstream;
-    try { upstream = JSON.parse(detail); } catch { upstream = { raw: detail.slice(0, 1200) }; }
-    return json({ error: 'Gemini gagal membuat soal.', status: geminiResponse.status, ...(debug ? { model: MODEL, upstream } : {}) }, 502);
+    let safeDetail = detail;
+    try {
+      const parsed = JSON.parse(detail);
+      safeDetail = parsed?.error?.message || parsed?.error?.status || detail;
+    } catch {}
+    return json({ error: 'Gemini gagal membuat soal.', status: geminiResponse.status, detail: cleanString(safeDetail, 500) }, 502);
   }
 
   try {
@@ -151,7 +139,7 @@ async function generateQuestions(request, env, debug = false) {
     return json({ model: MODEL, curriculum: curriculumMeta, input, questions });
   } catch (error) {
     console.error('Gemini parse/validation error', error);
-    return json({ error: 'Hasil Gemini tidak lolos validasi format.', ...(debug ? { detail: String(error?.message || error) } : {}) }, 502);
+    return json({ error: 'Hasil Gemini tidak lolos validasi format.', detail: cleanString(error.message, 300) }, 502);
   }
 }
 
@@ -172,6 +160,27 @@ function grade3SelfTestRequest(request) {
   });
 }
 
+async function listModels(env) {
+  if (!env.GEMINI_API_KEY) return json({ error: 'GEMINI_API_KEY belum dikonfigurasi.' }, 503);
+  const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models', {
+    headers: { 'x-goog-api-key': env.GEMINI_API_KEY }
+  });
+  if (!response.ok) {
+    const detail = await response.text();
+    return json({ error: 'Gagal mengambil daftar model Gemini.', status: response.status, detail: cleanString(detail, 500) }, 502);
+  }
+  const payload = await response.json();
+  const models = (payload.models || [])
+    .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
+    .map(m => ({ name: m.name, displayName: m.displayName, methods: m.supportedGenerationMethods }));
+  return json({
+    ok: true,
+    configuredModel: MODEL,
+    configuredModelAvailable: models.some(m => m.name === `models/${MODEL}`),
+    models
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -179,15 +188,15 @@ export default {
       return json({ ok: true, provider: 'Gemini', model: MODEL, configured: Boolean(env.GEMINI_API_KEY) });
     }
     if (url.pathname === '/api/ai/models' && request.method === 'GET') {
-      return geminiModels(env);
+      return listModels(env);
     }
     if (url.pathname === '/api/ai/self-test' && request.method === 'GET') {
       if (url.searchParams.get('run') !== 'grade3-place-value') return json({ error: 'Self-test token tidak valid.' }, 403);
-      return generateQuestions(grade3SelfTestRequest(request), env, true);
+      return generateQuestions(grade3SelfTestRequest(request), env);
     }
     if (url.pathname === '/api/ai/generate-questions') {
       if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
-      return generateQuestions(request, env, false);
+      return generateQuestions(request, env);
     }
     return env.ASSETS.fetch(request);
   }
