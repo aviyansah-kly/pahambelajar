@@ -81,22 +81,59 @@ async function validateAgainstCurriculum(request, env, input) {
   return findChapter(curriculum, input).meta;
 }
 
-function buildPrompt(input, curriculumMeta) {
-  const mathRules = input.subject === 'Matematika'
-    ? `- Hitung dan verifikasi jawaban matematis sebelum membuat distractor.\n- Bedakan istilah dengan konsisten: nilai tempat = ratusan/puluhan/satuan; nilai angka = nilai digit seperti 300/60/7.\n- Utamakan istilah matematika tersebut dalam penjelasan; hindari menjelaskan posisi hanya dengan \"paling kiri\", \"kiri\", atau \"kanan\" jika bisa dijelaskan dengan ratusan/puluhan/satuan.`
-    : '- Gunakan kosakata dan struktur bahasa yang sesuai usia dan skill yang diminta.';
-
-  return `Anda adalah editor soal PahamBelajar untuk anak SD/MI/SDIT Indonesia.\n\nBuat ${input.count} soal PILIHAN GANDA original.\nKelas: ${input.grade}\nFase: ${curriculumMeta.phase}\nSemester: ${input.semester}\nPelajaran: ${input.subject}\nBab: ${input.chapterTitle}\nSkill: ${input.skill}\nDifficulty: ${input.difficulty} dari 3\n\nAturan wajib:\n- Hanya menguji skill tersebut dan jangan memakai materi kelas yang lebih tinggi.\n- Setiap soal punya tepat 4 opsi dan hanya 1 jawaban benar.\n- Bahasa singkat, natural, jelas, tidak menjebak, cocok untuk anak kelas ${input.grade}.\n- Pertanyaan dalam satu batch harus bervariasi; jangan hanya mengganti angka pada kalimat yang sama.\n- Variasikan cara menguji konsep jika skill memungkinkan: identifikasi konsep, memilih contoh yang tepat, menentukan nilai, membandingkan, atau mengurutkan.\n- Distraktor harus masuk akal sebagai kesalahan umum anak, tetapi tidak ambigu.\n- Field why harus menjelaskan alasan jawaban dengan 1-3 kalimat sederhana, bukan sekadar mengulang jawaban.\n- Gunakan kapitalisasi dan tanda baca yang konsisten pada opsi.\n- Hindari konteks budaya yang terlalu spesifik, data kontroversial, dan beban membaca yang tidak perlu.\n${mathRules}\n- Jangan menyalin kalimat dari buku pemerintah atau penerbit; buat soal original.\n- Kembalikan JSON sesuai schema saja.`;
+function skillGuardrail(skill) {
+  const rules = {
+    'membaca dan menulis bilangan': {
+      prompt: 'Uji hanya cara membaca nama bilangan, menulis lambang bilangan dari kata-kata, atau menyusun lambang bilangan dari ratusan-puluhan-satuan. Jangan berubah menjadi soal nilai tempat, nilai angka, bentuk panjang, perbandingan, atau pengurutan.',
+      required: /(dibaca|lambang bilangan|ditulis|nama bilangan|terdiri dari)/i,
+      forbidden: /(nilai tempat|nilai angka|bentuk panjang|lebih besar|lebih kecil|urutan|urutkan)/i
+    },
+    'nilai tempat ratusan-puluhan-satuan': {
+      prompt: 'Uji hanya nilai tempat ratusan/puluhan/satuan atau nilai sebuah digit berdasarkan tempatnya. Jangan menguji bentuk panjang, membandingkan, atau mengurutkan bilangan.',
+      required: /(nilai tempat|nilai angka|ratusan|puluhan|satuan|memiliki angka)/i,
+      forbidden: /(bentuk panjang|lebih besar|lebih kecil|urutan|diurutkan)/i
+    },
+    'bentuk panjang': {
+      prompt: 'Uji hanya mengubah bilangan ke bentuk panjang atau menggabungkan bentuk panjang menjadi bilangan. Jangan membuat soal yang hanya bertanya nilai sebuah digit.',
+      required: /(bentuk panjang|\+)/i,
+      forbidden: /(berapa(?:kah)? nilai angka|nilai tempat|lebih besar|lebih kecil|urutan|diurutkan)/i
+    },
+    'membandingkan bilangan': {
+      prompt: 'Uji hanya perbandingan dua atau beberapa bilangan: lebih besar, lebih kecil, tanda < > =, nilai paling besar/kecil, atau bilangan di antara. Jangan meminta urutan lengkap beberapa bilangan.',
+      required: /(lebih besar|lebih kecil|tanda perbandingan|paling besar|paling kecil|di antara|membandingkan|pernyataan yang benar)/i,
+      forbidden: /(urutan bilangan|diurutkan|mengurutkan|terbesar ke yang terkecil|terkecil ke yang terbesar)/i
+    },
+    'mengurutkan bilangan': {
+      prompt: 'Uji hanya pengurutan beberapa bilangan naik/turun atau menentukan posisi suatu bilangan setelah diurutkan. Jangan membuat soal yang hanya mencari satu bilangan paling besar atau paling kecil.',
+      required: /(urutan|diurutkan|mengurutkan|urutan kedua|terbesar ke|terkecil ke)/i,
+      forbidden: /^(?!.*(?:urutan|diurutkan|mengurutkan)).*(bilangan yang paling besar|bilangan yang paling kecil)/i
+    }
+  };
+  return rules[skill] || null;
 }
 
-function lintCandidate(candidate, seenStems) {
+function buildPrompt(input, curriculumMeta) {
+  const guardrail = skillGuardrail(input.skill);
+  const mathRules = input.subject === 'Matematika'
+    ? `- Hitung dan verifikasi jawaban matematis sebelum membuat distractor.\n- Bedakan istilah dengan konsisten: nilai tempat = ratusan/puluhan/satuan; nilai angka = nilai digit seperti 300/60/7.\n- Jangan menjelaskan nilai tempat dengan arah visual seperti kiri, kanan, paling kiri, paling kanan, kedua dari kanan/kiri, atau posisi tengah. Gunakan istilah ratusan, puluhan, satuan.\n${guardrail ? `- Guardrail skill: ${guardrail.prompt}` : ''}`
+    : '- Gunakan kosakata dan struktur bahasa yang sesuai usia dan skill yang diminta.';
+
+  return `Anda adalah editor soal PahamBelajar untuk anak SD/MI/SDIT Indonesia.\n\nBuat ${input.count} soal PILIHAN GANDA original.\nKelas: ${input.grade}\nFase: ${curriculumMeta.phase}\nSemester: ${input.semester}\nPelajaran: ${input.subject}\nBab: ${input.chapterTitle}\nSkill: ${input.skill}\nDifficulty: ${input.difficulty} dari 3\n\nAturan wajib:\n- Hanya menguji skill tersebut dan jangan memakai materi kelas yang lebih tinggi.\n- Setiap soal punya tepat 4 opsi dan hanya 1 jawaban benar.\n- Bahasa singkat, natural, jelas, tidak menjebak, cocok untuk anak kelas ${input.grade}.\n- Pertanyaan dalam satu batch harus bervariasi; jangan hanya mengganti angka pada kalimat yang sama.\n- Jangan mencampur skill tetangga hanya demi variasi. Variasi harus tetap berada di dalam skill yang diminta.\n- Distraktor harus masuk akal sebagai kesalahan umum anak, tetapi tidak ambigu.\n- Field why harus menjelaskan alasan jawaban dengan 1-3 kalimat sederhana, bukan sekadar mengulang jawaban.\n- Gunakan kapitalisasi dan tanda baca yang konsisten pada opsi.\n- Hindari konteks budaya yang terlalu spesifik, data kontroversial, dan beban membaca yang tidak perlu.\n${mathRules}\n- Jangan menyalin kalimat dari buku pemerintah atau penerbit; buat soal original.\n- Kembalikan JSON sesuai schema saja.`;
+}
+
+function lintCandidate(candidate, seenStems, input) {
   const reasons = [];
   const stemKey = normalizeText(candidate.q);
+  const guardrail = skillGuardrail(input.skill);
   if (!stemKey || stemKey.length < 8) reasons.push('pertanyaan terlalu pendek/tidak jelas');
   if (seenStems.has(stemKey)) reasons.push('pertanyaan duplikat dalam batch');
   if (candidate.q.length > 220) reasons.push('pertanyaan terlalu panjang untuk MVP');
   if (candidate.why.length < 15) reasons.push('penjelasan terlalu pendek');
-  if (/\b(paling kiri|sebelah kiri|sebelah kanan)\b/i.test(candidate.why)) reasons.push('penjelasan terlalu bergantung pada arah kiri/kanan');
+  if (/\b(kiri|kanan|paling kiri|paling kanan|sebelah kiri|sebelah kanan|kedua dari kanan|kedua dari kiri|posisi tengah)\b/i.test(candidate.why)) {
+    reasons.push('penjelasan terlalu bergantung pada arah kiri/kanan');
+  }
+  if (guardrail?.required && !guardrail.required.test(candidate.q)) reasons.push('stem tidak cukup merepresentasikan skill target');
+  if (guardrail?.forbidden && guardrail.forbidden.test(candidate.q)) reasons.push('stem bergeser ke skill lain');
   if (new Set(candidate.o.map(normalizeText)).size !== 4) reasons.push('opsi tidak unik setelah normalisasi');
   if (candidate.o.some(option => !cleanString(option, 120))) reasons.push('ada opsi kosong');
   if (!reasons.length) seenStems.add(stemKey);
@@ -128,7 +165,7 @@ function validateQuestions(payload, input) {
       review_status: 'candidate'
     };
 
-    const reasons = lintCandidate(candidate, seenStems);
+    const reasons = lintCandidate(candidate, seenStems, input);
     if (reasons.length) {
       candidate.review_status = 'rejected-auto';
       rejected.push({ ...candidate, rejection_reasons: reasons });
@@ -147,7 +184,7 @@ async function callGemini(input, curriculumMeta, env) {
     body: JSON.stringify({
       contents: [{ role: 'user', parts: [{ text: buildPrompt(input, curriculumMeta) }] }],
       generationConfig: {
-        temperature: 0.55,
+        temperature: 0.5,
         responseMimeType: 'application/json',
         responseSchema: questionSchema
       }
@@ -255,12 +292,7 @@ async function grade3Chapter1Pilot(request, env) {
       const generated = await generateFromInput(input, { phase: grade.phase, confidence: chapter.confidence }, env);
       totalAccepted += generated.accepted.length;
       totalRejected += generated.rejected.length;
-      results.push({
-        skill,
-        requested: input.count,
-        accepted: generated.accepted,
-        rejected: generated.rejected
-      });
+      results.push({ skill, requested: input.count, accepted: generated.accepted, rejected: generated.rejected });
     } catch (error) {
       results.push({ skill, error: error.message, status: error.status, detail: cleanString(error.detail || '', 300) });
     }
@@ -268,14 +300,14 @@ async function grade3Chapter1Pilot(request, env) {
 
   return json({
     ok: true,
-    pilot: 'grade3-math-chapter1',
+    pilot: 'grade3-math-chapter1-v2',
     model: MODEL,
     chapter: { id: chapter.id, title: chapter.title, confidence: chapter.confidence },
     policy: {
       target: '30 candidate questions, 6 per skill',
       publish: false,
-      auto_filter: ['duplicate stem', 'duplicate options', 'overlong stem', 'weak explanation', 'directional left/right explanation'],
-      next_stage: 'human review, then expand strong skills to 12–16 candidates before selecting an 8–12 question live bank'
+      auto_filter: ['duplicate stem', 'duplicate options', 'overlong stem', 'weak explanation', 'directional explanation', 'skill drift'],
+      next_stage: 'human review, regenerate weak skills, then select 8–12 live-bank questions per skill'
     },
     summary: { skills: chapter.skills.length, requested: chapter.skills.length * 6, accepted: totalAccepted, rejected: totalRejected },
     results
