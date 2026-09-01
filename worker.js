@@ -35,6 +35,14 @@ function cleanString(value, max = 160) {
   return String(value ?? '').trim().slice(0, max);
 }
 
+function normalizeText(value) {
+  return cleanString(value, 500)
+    .toLowerCase()
+    .replace(/[^a-z0-9à-ÿ\u00c0-\u024f\u1e00-\u1eff\u0100-\u017f\u0180-\u024f\u1e00-\u1eff\u00a0-\uffff]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function validateInput(body) {
   const grade = Number(body.grade);
   const semester = Number(body.semester);
@@ -52,61 +60,87 @@ function validateInput(body) {
   return { grade, semester, difficulty, count, subject, chapterId, chapterTitle, skill };
 }
 
-async function validateAgainstCurriculum(request, env, input) {
+async function getCurriculum(request, env) {
   const url = new URL('/data/core-curriculum-v2.json', request.url);
   const response = await env.ASSETS.fetch(new Request(url));
   if (!response.ok) throw new Error('curriculum v2 tidak tersedia');
-  const curriculum = await response.json();
+  return response.json();
+}
+
+function findChapter(curriculum, input) {
   const grade = curriculum?.grades?.[String(input.grade)];
   const chapters = grade?.semesters?.[String(input.semester)]?.[input.subject] || [];
   const chapter = chapters.find(c => c.id === input.chapterId && c.title === input.chapterTitle);
   if (!chapter) throw new Error('bab tidak cocok dengan curriculum v2');
   if (!chapter.skills?.includes(input.skill)) throw new Error('skill tidak cocok dengan bab');
-  return { phase: grade.phase, confidence: chapter.confidence };
+  return { grade, chapter, meta: { phase: grade.phase, confidence: chapter.confidence } };
+}
+
+async function validateAgainstCurriculum(request, env, input) {
+  const curriculum = await getCurriculum(request, env);
+  return findChapter(curriculum, input).meta;
 }
 
 function buildPrompt(input, curriculumMeta) {
-  const subjectRules = input.subject === 'Matematika'
-    ? 'Pastikan semua operasi dan jawaban matematis benar. Jangan memakai materi di atas kelas yang diminta.'
-    : 'Gunakan kosakata dan struktur bahasa yang sesuai usia dan skill yang diminta.';
-  return `Anda adalah editor soal PahamBelajar untuk anak SD/MI/SDIT Indonesia.\n\nBuat ${input.count} soal PILIHAN GANDA original.\nKelas: ${input.grade}\nFase: ${curriculumMeta.phase}\nSemester: ${input.semester}\nPelajaran: ${input.subject}\nBab: ${input.chapterTitle}\nSkill: ${input.skill}\nDifficulty: ${input.difficulty} dari 3\n\nAturan wajib:\n- Hanya menguji skill tersebut.\n- Setiap soal punya tepat 4 opsi dan hanya 1 jawaban benar.\n- Bahasa singkat, jelas, tidak menjebak, cocok untuk anak kelas ${input.grade}.\n- Distraktor harus masuk akal sebagai kesalahan umum anak.\n- Field why harus menjelaskan alasan jawaban dengan 1-3 kalimat sederhana, bukan sekadar mengulang jawaban.\n- Hindari konteks budaya yang terlalu spesifik, data kontroversial, dan materi yang belum perlu.\n- ${subjectRules}\n- Jangan menyalin kalimat dari buku penerbit; buat soal original.\n- Kembalikan JSON sesuai schema saja.`;
+  const mathRules = input.subject === 'Matematika'
+    ? `- Hitung dan verifikasi jawaban matematis sebelum membuat distractor.\n- Bedakan istilah dengan konsisten: nilai tempat = ratusan/puluhan/satuan; nilai angka = nilai digit seperti 300/60/7.\n- Utamakan istilah matematika tersebut dalam penjelasan; hindari menjelaskan posisi hanya dengan \"paling kiri\", \"kiri\", atau \"kanan\" jika bisa dijelaskan dengan ratusan/puluhan/satuan.`
+    : '- Gunakan kosakata dan struktur bahasa yang sesuai usia dan skill yang diminta.';
+
+  return `Anda adalah editor soal PahamBelajar untuk anak SD/MI/SDIT Indonesia.\n\nBuat ${input.count} soal PILIHAN GANDA original.\nKelas: ${input.grade}\nFase: ${curriculumMeta.phase}\nSemester: ${input.semester}\nPelajaran: ${input.subject}\nBab: ${input.chapterTitle}\nSkill: ${input.skill}\nDifficulty: ${input.difficulty} dari 3\n\nAturan wajib:\n- Hanya menguji skill tersebut dan jangan memakai materi kelas yang lebih tinggi.\n- Setiap soal punya tepat 4 opsi dan hanya 1 jawaban benar.\n- Bahasa singkat, natural, jelas, tidak menjebak, cocok untuk anak kelas ${input.grade}.\n- Pertanyaan dalam satu batch harus bervariasi; jangan hanya mengganti angka pada kalimat yang sama.\n- Variasikan cara menguji konsep jika skill memungkinkan: identifikasi konsep, memilih contoh yang tepat, menentukan nilai, membandingkan, atau mengurutkan.\n- Distraktor harus masuk akal sebagai kesalahan umum anak, tetapi tidak ambigu.\n- Field why harus menjelaskan alasan jawaban dengan 1-3 kalimat sederhana, bukan sekadar mengulang jawaban.\n- Gunakan kapitalisasi dan tanda baca yang konsisten pada opsi.\n- Hindari konteks budaya yang terlalu spesifik, data kontroversial, dan beban membaca yang tidak perlu.\n${mathRules}\n- Jangan menyalin kalimat dari buku pemerintah atau penerbit; buat soal original.\n- Kembalikan JSON sesuai schema saja.`;
+}
+
+function lintCandidate(candidate, seenStems) {
+  const reasons = [];
+  const stemKey = normalizeText(candidate.q);
+  if (!stemKey || stemKey.length < 8) reasons.push('pertanyaan terlalu pendek/tidak jelas');
+  if (seenStems.has(stemKey)) reasons.push('pertanyaan duplikat dalam batch');
+  if (candidate.q.length > 220) reasons.push('pertanyaan terlalu panjang untuk MVP');
+  if (candidate.why.length < 15) reasons.push('penjelasan terlalu pendek');
+  if (/\b(paling kiri|sebelah kiri|sebelah kanan)\b/i.test(candidate.why)) reasons.push('penjelasan terlalu bergantung pada arah kiri/kanan');
+  if (new Set(candidate.o.map(normalizeText)).size !== 4) reasons.push('opsi tidak unik setelah normalisasi');
+  if (candidate.o.some(option => !cleanString(option, 120))) reasons.push('ada opsi kosong');
+  if (!reasons.length) seenStems.add(stemKey);
+  return reasons;
 }
 
 function validateQuestions(payload, input) {
   const list = payload?.questions;
   if (!Array.isArray(list) || list.length < 1) throw new Error('Gemini tidak mengembalikan daftar soal');
-  return list.slice(0, input.count).map((q, i) => {
+  const seenStems = new Set();
+  const accepted = [];
+  const rejected = [];
+  const batchId = Date.now();
+
+  list.slice(0, input.count).forEach((q, i) => {
     if (q.type !== 'choice' || !Array.isArray(q.o) || q.o.length !== 4) throw new Error(`format soal ${i + 1} tidak valid`);
     if (!Number.isInteger(q.a) || q.a < 0 || q.a > 3) throw new Error(`jawaban soal ${i + 1} tidak valid`);
-    const options = q.o.map(x => cleanString(x, 120));
-    if (new Set(options).size !== 4) throw new Error(`opsi soal ${i + 1} tidak unik`);
-    return {
-      id: `ai-${input.chapterId}-${Date.now()}-${i + 1}`,
+
+    const candidate = {
+      id: `ai-${input.chapterId}-${batchId}-${i + 1}`,
       skill: input.skill,
       difficulty: input.difficulty,
       type: 'choice',
       q: cleanString(q.q, 320),
-      o: options,
+      o: q.o.map(x => cleanString(x, 120)),
       a: q.a,
       why: cleanString(q.why, 500),
       source: 'gemini-draft',
       review_status: 'candidate'
     };
+
+    const reasons = lintCandidate(candidate, seenStems);
+    if (reasons.length) {
+      candidate.review_status = 'rejected-auto';
+      rejected.push({ ...candidate, rejection_reasons: reasons });
+    } else {
+      accepted.push(candidate);
+    }
   });
+
+  return { accepted, rejected };
 }
 
-async function generateQuestions(request, env) {
-  if (!env.GEMINI_API_KEY) return json({ error: 'GEMINI_API_KEY belum dikonfigurasi di Cloudflare Worker.' }, 503);
-  let body;
-  try { body = await request.json(); } catch { return json({ error: 'Body JSON tidak valid.' }, 400); }
-  let input, curriculumMeta;
-  try {
-    input = validateInput(body);
-    curriculumMeta = await validateAgainstCurriculum(request, env, input);
-  } catch (error) {
-    return json({ error: error.message }, 400);
-  }
-
+async function callGemini(input, curriculumMeta, env) {
   const geminiResponse = await fetch(GEMINI_URL, {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
@@ -128,18 +162,53 @@ async function generateQuestions(request, env) {
       const parsed = JSON.parse(detail);
       safeDetail = parsed?.error?.message || parsed?.error?.status || detail;
     } catch {}
-    return json({ error: 'Gemini gagal membuat soal.', status: geminiResponse.status, detail: cleanString(safeDetail, 500) }, 502);
+    const error = new Error('Gemini gagal membuat soal.');
+    error.status = geminiResponse.status;
+    error.detail = cleanString(safeDetail, 500);
+    throw error;
+  }
+
+  const result = await geminiResponse.json();
+  const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('Gemini tidak mengembalikan konten.');
+  return JSON.parse(text);
+}
+
+async function generateFromInput(input, curriculumMeta, env) {
+  const parsed = await callGemini(input, curriculumMeta, env);
+  return validateQuestions(parsed, input);
+}
+
+async function generateQuestions(request, env) {
+  if (!env.GEMINI_API_KEY) return json({ error: 'GEMINI_API_KEY belum dikonfigurasi di Cloudflare Worker.' }, 503);
+  let body;
+  try { body = await request.json(); } catch { return json({ error: 'Body JSON tidak valid.' }, 400); }
+
+  let input, curriculumMeta;
+  try {
+    input = validateInput(body);
+    curriculumMeta = await validateAgainstCurriculum(request, env, input);
+  } catch (error) {
+    return json({ error: error.message }, 400);
   }
 
   try {
-    const result = await geminiResponse.json();
-    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-    const parsed = JSON.parse(text);
-    const questions = validateQuestions(parsed, input);
-    return json({ model: MODEL, curriculum: curriculumMeta, input, questions });
+    const result = await generateFromInput(input, curriculumMeta, env);
+    return json({
+      model: MODEL,
+      curriculum: curriculumMeta,
+      input,
+      summary: { requested: input.count, accepted: result.accepted.length, rejected: result.rejected.length },
+      questions: result.accepted,
+      rejected: result.rejected
+    });
   } catch (error) {
-    console.error('Gemini parse/validation error', error);
-    return json({ error: 'Hasil Gemini tidak lolos validasi format.', detail: cleanString(error.message, 300) }, 502);
+    console.error('Gemini generation/validation error', error);
+    return json({
+      error: error.message || 'Hasil Gemini tidak lolos validasi.',
+      status: error.status,
+      detail: cleanString(error.detail || '', 500)
+    }, 502);
   }
 }
 
@@ -157,6 +226,59 @@ function grade3SelfTestRequest(request) {
       difficulty: 1,
       count: 3
     })
+  });
+}
+
+async function grade3Chapter1Pilot(request, env) {
+  if (!env.GEMINI_API_KEY) return json({ error: 'GEMINI_API_KEY belum dikonfigurasi.' }, 503);
+  const curriculum = await getCurriculum(request, env);
+  const grade = curriculum?.grades?.['3'];
+  const chapter = grade?.semesters?.['1']?.Matematika?.find(c => c.id === 'm3s1-01');
+  if (!chapter) return json({ error: 'Bab pilot tidak ditemukan di curriculum v2.' }, 500);
+
+  const results = [];
+  let totalAccepted = 0;
+  let totalRejected = 0;
+
+  for (const skill of chapter.skills) {
+    const input = {
+      grade: 3,
+      semester: 1,
+      subject: 'Matematika',
+      chapterId: chapter.id,
+      chapterTitle: chapter.title,
+      skill,
+      difficulty: 1,
+      count: 6
+    };
+    try {
+      const generated = await generateFromInput(input, { phase: grade.phase, confidence: chapter.confidence }, env);
+      totalAccepted += generated.accepted.length;
+      totalRejected += generated.rejected.length;
+      results.push({
+        skill,
+        requested: input.count,
+        accepted: generated.accepted,
+        rejected: generated.rejected
+      });
+    } catch (error) {
+      results.push({ skill, error: error.message, status: error.status, detail: cleanString(error.detail || '', 300) });
+    }
+  }
+
+  return json({
+    ok: true,
+    pilot: 'grade3-math-chapter1',
+    model: MODEL,
+    chapter: { id: chapter.id, title: chapter.title, confidence: chapter.confidence },
+    policy: {
+      target: '30 candidate questions, 6 per skill',
+      publish: false,
+      auto_filter: ['duplicate stem', 'duplicate options', 'overlong stem', 'weak explanation', 'directional left/right explanation'],
+      next_stage: 'human review, then expand strong skills to 12–16 candidates before selecting an 8–12 question live bank'
+    },
+    summary: { skills: chapter.skills.length, requested: chapter.skills.length * 6, accepted: totalAccepted, rejected: totalRejected },
+    results
   });
 }
 
@@ -191,8 +313,10 @@ export default {
       return listModels(env);
     }
     if (url.pathname === '/api/ai/self-test' && request.method === 'GET') {
-      if (url.searchParams.get('run') !== 'grade3-place-value') return json({ error: 'Self-test token tidak valid.' }, 403);
-      return generateQuestions(grade3SelfTestRequest(request), env);
+      const run = url.searchParams.get('run');
+      if (run === 'grade3-place-value') return generateQuestions(grade3SelfTestRequest(request), env);
+      if (run === 'grade3-chapter1') return grade3Chapter1Pilot(request, env);
+      return json({ error: 'Self-test token tidak valid.' }, 403);
     }
     if (url.pathname === '/api/ai/generate-questions') {
       if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
