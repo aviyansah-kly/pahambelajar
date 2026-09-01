@@ -1,4 +1,5 @@
 import { buildMathBank as buildBase } from './math-bank-runtime-v2.js';
+import { enhanceMathBank } from './math-bank-quality-v3.js';
 
 const HELPER='Perhatikan informasi dengan teliti sebelum menjawab.';
 
@@ -22,7 +23,8 @@ function simplifyForGrade(text,grade){
     q=q.replace(/Berdasarkan informasi tersebut,\s*/gi,'')
        .replace(/Manakah jawaban yang paling tepat\??/gi,'Jawabannya ...')
        .replace(/Tentukanlah/gi,'Tentukan')
-       .replace(/Hitunglah/gi,'Hitung');
+       .replace(/Hitunglah/gi,'Hitung')
+       .replace(/sedangkan/gi,'dan');
   }else if(grade===2){
     q=q.replace(/Tentukanlah/gi,'Tentukan').replace(/Hitunglah/gi,'Hitung');
   }
@@ -34,7 +36,7 @@ function validateItem(item){
   if(!Number.isInteger(item.a) || item.a<0 || item.a>3) return false;
   if(new Set(item.o.map(x=>String(x).trim().toLowerCase())).size!==4) return false;
   if(!String(item.q||'').trim() || !String(item.why||'').trim()) return false;
-  return true;
+  return item.validation?.basic!==false;
 }
 
 function applyGradeLanguage(bank,grade){
@@ -48,17 +50,19 @@ function applyGradeLanguage(bank,grade){
       }));
     }
   }
-  bank.version='2.6-runtime-testing';
+  bank.version='3.1-literacy-age-level';
   bank.generation_policy={
     ...(bank.generation_policy||{}),
     helper_separated_from_stem:true,
     age_appropriate_language:true,
+    literacy_layer_active:true,
     language_levels:{1:'very-simple concrete one-step',2:'simple context with one-two facts',3:'short narrative with familiar numeracy context'}
   };
   return bank;
 }
 
 export function buildMathBank(curriculum,grade){
-  const bank=buildBase(curriculum,grade);
-  return bank?applyGradeLanguage(bank,Number(grade)):bank;
+  const base=buildBase(curriculum,grade);
+  const enhanced=base?enhanceMathBank(base):base;
+  return enhanced?applyGradeLanguage(enhanced,Number(grade)):enhanced;
 }
