@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "provider_hint": "Gemini API free tier for development",
+  "purpose": "Generate candidate questions from PahamBelajar curriculum skills; never publish AI output without validation.",
+  "input_schema": {
+    "grade": "number",
+    "phase": "A|B|C",
+    "subject": "Matematika|Bahasa Inggris",
+    "chapter_id": "string",
+    "chapter_title": "string",
+    "skill": "string",
+    "difficulty": "1|2|3",
+    "question_type": "choice|text|compare|order|match",
+    "count": "number"
+  },
+  "output_schema": {
+    "id": "string",
+    "skill": "string",
+    "difficulty": "number",
+    "type": "string",
+    "q": "string",
+    "o": "array, for choice only",
+    "a": "answer or answer index",
+    "display": "optional display answer",
+    "why": "short child-friendly explanation",
+    "validation": {
+      "curriculum_aligned": "boolean",
+      "single_correct_answer": "boolean",
+      "age_appropriate": "boolean"
+    }
+  },
+  "prompt_rules": [
+    "Use only the supplied chapter and skill. Do not introduce material from a higher grade.",
+    "Use simple Indonesian suitable for the stated elementary grade.",
+    "Every question must have exactly one unambiguous correct answer unless the type explicitly requires a sequence or set.",
+    "Every question must include why: explain the reasoning in 1-3 short sentences, not merely repeat the answer.",
+    "For mathematics, compute the correct result independently before creating distractors.",
+    "Distractors must reflect plausible child mistakes but must not be misleading or ambiguous.",
+    "Avoid trick questions, culturally obscure references, and unnecessary reading load.",
+    "Return JSON only and follow the schema exactly."
+  ],
+  "math_policy": {
+    "recommended": "hybrid",
+    "deterministic_code_handles": ["numbers", "operations", "correct answer", "range constraints", "difficulty constraints"],
+    "ai_handles": ["wording", "context", "distractors", "child-friendly explanation", "variation"],
+    "reason": "Mathematical truth should not depend solely on model generation."
+  }
+}
