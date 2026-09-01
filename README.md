@@ -1,19 +1,16 @@
 # PahamBelajar
 
-Aplikasi belajar interaktif berbasis bab dan peta konsep untuk siswa SD/MI.
+PahamBelajar adalah prototype aplikasi belajar anak SD/MI/SDIT yang saat ini difokuskan pada **Matematika** dan **Bahasa Inggris**.
 
-## Struktur
+## Curriculum model
 
-- `public/index.html` — aplikasi utama
-- `public/_headers` — header keamanan Cloudflare Pages
+- Active subjects: Matematika + Bahasa Inggris
+- Grades: 1–6
+- Phases: A (1–2), B (3–4), C (5–6)
+- Primary structure: Kelas → Semester → Bab → Skills → Latihan/Tes
+- Source of truth: Capaian Pembelajaran nasional
+- Chapter organization: triangulasi buku pemerintah, buku penerbit komersial, dan praktik sekolah umum
+- Mapel lain tetap disimpan di `public/data/curriculum-v1.json` dan hanya di-hide dari UI
+- Active core map: `public/data/core-curriculum-v2.json`
 
-## Cloudflare Pages
-
-Gunakan konfigurasi berikut:
-
-- Production branch: `main`
-- Framework preset: `None`
-- Build command: `exit 0`
-- Build output directory: `public`
-
-Setelah repository dihubungkan ke Cloudflare Pages, setiap push ke branch `main` akan memicu deployment otomatis.
+Urutan bab di PahamBelajar adalah struktur produk, bukan urutan nasional yang diwajibkan. Confidence metadata dipakai untuk membedakan bab yang tervalidasi kuat dengan topik yang masih bersifat general mapping.
