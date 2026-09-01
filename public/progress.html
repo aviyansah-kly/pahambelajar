@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6c63ff">
+<title>PahamBelajar — Math Bank Progress</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#1f2430;--muted:#72798b;--line:#e7e9f1;--brand:#6c63ff;--ok:#16845b;--warn:#b66a00;--pending:#7c8396;--shadow:0 8px 24px rgba(31,36,48,.07)}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.top{position:sticky;top:0;z-index:10;background:rgba(246,247,251,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}.topin{max-width:1180px;margin:auto;padding:15px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{font-weight:700}.brand span{color:var(--brand)}.back{font-size:13px;color:var(--brand);text-decoration:none;font-weight:600}.wrap{max-width:1180px;margin:auto;padding:28px 22px 56px}.eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brand)}h1{font-size:32px;line-height:1.14;margin:8px 0 8px}p{color:var(--muted);line-height:1.6}.meta{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 24px}.pill{font-size:12px;padding:7px 10px;background:#fff;border:1px solid var(--line);border-radius:999px}.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:22px 0}.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow)}.stat b{font-size:27px;display:block;margin-top:6px}.stat small{color:var(--muted)}.bar{height:9px;background:#eceef4;border-radius:999px;overflow:hidden;margin-top:12px}.bar>span{height:100%;display:block;background:var(--brand);border-radius:inherit}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.group{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}.grouphead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}.group h2{font-size:18px;margin:0 0 4px}.sub{font-size:12px;color:var(--muted)}.chapter{display:grid;grid-template-columns:1fr auto;gap:12px;padding:13px 0;border-top:1px solid var(--line)}.chapter:first-of-type{border-top:0}.chapter-title{font-size:14px;font-weight:650}.chapter-meta{font-size:12px;color:var(--muted);margin-top:4px}.status{font-size:11px;font-weight:700;padding:5px 8px;border-radius:999px;white-space:nowrap;height:max-content}.status.ready{background:#e9f8f1;color:var(--ok)}.status.progress{background:#fff2df;color:var(--warn)}.status.pending{background:#f0f1f5;color:var(--pending)}.actions{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}.btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--brand);font:inherit;font-size:12px;font-weight:650;border-radius:9px;padding:7px 9px;text-decoration:none;cursor:pointer}.btn:hover{border-color:#c9c5ff}.note{margin-top:22px;padding:15px 17px;border:1px solid #dedbf9;background:#f2f0ff;border-radius:14px;font-size:13px;color:#59537e;line-height:1.55}.error{padding:18px;border:1px solid #f2c8c8;background:#fff5f5;border-radius:14px;color:#9e3535}@media(max-width:760px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:1fr}h1{font-size:27px}.wrap{padding:22px 16px 44px}.topin{padding:14px 16px}}@media(max-width:420px){.summary{grid-template-columns:1fr 1fr}.stat{padding:14px}.stat b{font-size:23px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin"><div class="brand">Paham<span>Belajar</span> · Build Monitor</div><a class="back" href="/">← Buka aplikasi</a></div></header>
+<main class="wrap">
+  <div class="eyebrow">Mathematics Question Bank</div>
+  <h1>Progress Kelas 1–3</h1>
+  <p>Monitor pembangunan bank soal Matematika Semester 1 dan 2. Status di halaman ini membaca build plan terbaru dari feature branch.</p>
+  <div id="meta" class="meta"></div>
+  <div id="summary" class="summary"></div>
+  <div id="groups" class="grid"></div>
+  <div class="note"><b>Arti status:</b> <b>In progress</b> berarti quality pipeline sedang dikerjakan. <b>Ready</b> hanya boleh digunakan setelah bank soal sudah lolos quality gate. <b>Pending</b> belum diproses. Tombol Quality report menjalankan generator + reviewer Gemini sehingga sebaiknya tidak ditekan berulang-ulang tanpa kebutuhan.</div>
+</main>
+<script>
+(async()=>{
+  const $=id=>document.getElementById(id);
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const labelStatus=s=>s==='ready'||s==='complete'||s==='ready-for-testing'?'Ready':s?.includes('progress')?'In progress':'Pending';
+  const statusClass=s=>s==='ready'||s==='complete'||s==='ready-for-testing'?'ready':s?.includes('progress')?'progress':'pending';
+  const reportUrl=(grade,semester,id)=>`/api/ai/chapter-quality-report?grade=${grade}&semester=${semester}&chapter_id=${encodeURIComponent(id)}`;
+  try{
+    const r=await fetch('/data/math-bank-build-plan-v1.json?ts='+Date.now(),{cache:'no-store'});
+    if(!r.ok)throw new Error('Build plan tidak tersedia');
+    const plan=await r.json();
+    const groups=plan.coverage||[];
+    const chapters=groups.flatMap(g=>(g.chapters||[]).map(c=>({...c,grade:g.grade,semester:g.semester})));
+    const ready=chapters.filter(c=>statusClass(c.status)==='ready').length;
+    const progress=chapters.filter(c=>statusClass(c.status)==='progress').length;
+    const pending=chapters.length-ready-progress;
+    const skills=chapters.reduce((n,c)=>n+Number(c.skills||0),0);
+    const pct=chapters.length?Math.round((ready/chapters.length)*100):0;
+    $('meta').innerHTML=`<span class="pill">Updated ${esc(plan.updated||'-')}</span><span class="pill">Generator: ${esc(plan.quality_policy?.generator_model||'-')}</span><span class="pill">Reviewer: ${esc(plan.quality_policy?.reviewer_model||'-')}</span><span class="pill">Target: ${esc(plan.quality_policy?.preferred_live_bank_per_skill||'8-10')} soal / skill</span>`;
+    $('summary').innerHTML=`<div class="stat"><small>Overall ready</small><b>${pct}%</b><div class="bar"><span style="width:${pct}%"></span></div></div><div class="stat"><small>Chapter ready</small><b>${ready}/${chapters.length}</b></div><div class="stat"><small>In progress</small><b>${progress}</b></div><div class="stat"><small>Total skills</small><b>${skills}</b></div>`;
+    $('groups').innerHTML=groups.map(g=>{
+      const cs=g.chapters||[];const grReady=cs.filter(c=>statusClass(c.status)==='ready').length;const gp=cs.length?Math.round(grReady/cs.length*100):0;
+      return `<section class="group"><div class="grouphead"><div><h2>Kelas ${g.grade} · Semester ${g.semester}</h2><div class="sub">${grReady}/${cs.length} bab ready</div></div><span class="status ${gp===100?'ready':gp>0?'progress':'pending'}">${gp}%</span></div><div class="bar" style="margin:0 0 10px"><span style="width:${gp}%"></span></div>${cs.map(c=>`<div class="chapter"><div><div class="chapter-title">${esc(c.title)}</div><div class="chapter-meta">${esc(c.id)} · ${c.skills||0} skills · ${esc(c.confidence||'')}</div><div class="actions"><a class="btn" href="${reportUrl(g.grade,g.semester,c.id)}" target="_blank" rel="noopener">Quality report ↗</a></div></div><span class="status ${statusClass(c.status)}">${labelStatus(c.status)}</span></div>`).join('')}</section>`;
+    }).join('');
+  }catch(e){console.error(e);$('groups').innerHTML=`<div class="error"><b>Dashboard belum bisa dimuat.</b><br>${esc(e.message)}</div>`}
+})();
+</script>
+</body>
+</html>
