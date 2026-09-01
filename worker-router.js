@@ -1,5 +1,5 @@
 import baseWorker from './worker.js';
-import { buildMathBank } from './math-bank-runtime.js';
+import { buildMathBank } from './math-bank-runtime-v2.js';
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
