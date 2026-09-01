@@ -1,0 +1,64 @@
+import fs from 'node:fs';
+import { buildMathBank } from '../math-bank-runtime-v3.js';
+
+const curriculum=JSON.parse(fs.readFileSync('public/data/core-curriculum-v2.json','utf8'));
+const grades=[1,2,3],semesters=[1,2],MIN=8;
+const norm=v=>String(v??'').trim().toLowerCase().replace(/\s+/g,' ');
+const helperRx=/perhatikan informasi dengan teliti sebelum menjawab/i;
+
+function questionErrors(q,location,grade){
+  const e=[];
+  if(!q?.id)e.push(`${location}: missing id`);
+  if(q?.type!=='choice')e.push(`${location}: type must be choice`);
+  if(!Array.isArray(q?.o)||q.o.length!==4)e.push(`${location}: must have four options`);
+  if(!Number.isInteger(q?.a)||q.a<0||q.a>3)e.push(`${location}: invalid answer index`);
+  if(Array.isArray(q?.o)&&new Set(q.o.map(norm)).size!==4)e.push(`${location}: duplicate options`);
+  if(!String(q?.q||'').trim())e.push(`${location}: empty stem`);
+  if(!String(q?.why||'').trim())e.push(`${location}: empty explanation`);
+  if(helperRx.test(String(q?.q||'')))e.push(`${location}: helper leaked into stem`);
+  if(!String(q?.helper||'').trim())e.push(`${location}: helper missing`);
+  const expectedLevel=grade===1?'very-simple':grade===2?'simple-context':'short-narrative';
+  if(q?.language_level!==expectedLevel)e.push(`${location}: wrong language level ${q?.language_level}`);
+  if(q?.validation?.basic===false)e.push(`${location}: failed runtime validation (${(q.validation.reasons||[]).join(',')})`);
+  const m=String(q?.q||'').match(/bilangan\s+(\d{3}).*angka\s+(\d)/i);
+  if(/nilai tempat ratusan-puluhan-satuan/.test(q?.skill||'')&&m&&[...m[1]].filter(x=>x===m[2]).length>1)e.push(`${location}: ambiguous repeated digit`);
+  return e;
+}
+
+const report=[];let failed=false;
+for(const grade of grades){
+  const bank=buildMathBank(curriculum,grade);
+  const rows=[];
+  for(const semester of semesters){
+    const expected=curriculum?.grades?.[String(grade)]?.semesters?.[String(semester)]?.Matematika||[];
+    for(const chapterMeta of expected){
+      const chapter=bank?.chapters?.[chapterMeta.title];
+      const errors=[];
+      if(!chapter){errors.push(`missing runtime chapter ${chapterMeta.id}`);failed=true;rows.push({semester,id:chapterMeta.id,title:chapterMeta.title,ready:false,errors});continue;}
+      const ids=new Set();
+      for(const skill of chapterMeta.skills||[]){
+        const items=(chapter.practice||[]).filter(q=>q.skill===skill);
+        if(items.length!==MIN)errors.push(`${skill}: expected ${MIN} practice questions, got ${items.length}`);
+        items.forEach((q,i)=>{
+          const loc=`g${grade}/${chapterMeta.id}/${skill}/${i}`;
+          errors.push(...questionErrors(q,loc,grade));
+          if(ids.has(q.id))errors.push(`${loc}: duplicate question id`);ids.add(q.id);
+        });
+        const quiz=(chapter.quiz||[]).filter(q=>q.skill===skill);
+        if(quiz.length!==1)errors.push(`${skill}: expected 1 quiz question, got ${quiz.length}`);
+        quiz.forEach((q,i)=>errors.push(...questionErrors(q,`g${grade}/${chapterMeta.id}/quiz/${skill}/${i}`,grade)));
+      }
+      const contextual=(chapter.practice||[]).filter(q=>!/^(\d+)\s*[+−×]\s*(\d+)\s*=/.test(String(q.q||''))).length;
+      const total=(chapter.practice||[]).length;
+      const contextualRatio=total?contextual/total:0;
+      if(contextualRatio<0.70)errors.push(`contextual ratio too low: ${(contextualRatio*100).toFixed(1)}%`);
+      if(errors.length)failed=true;
+      rows.push({semester,id:chapterMeta.id,title:chapterMeta.title,practice:total,contextual_ratio:Number(contextualRatio.toFixed(3)),ready:errors.length===0,errors});
+    }
+  }
+  report.push({grade,bank_version:bank?.version,chapters:rows,ready:rows.every(x=>x.ready)});
+}
+
+const summary={grades_ready:report.filter(x=>x.ready).length,total_grades:grades.length,chapters_ready:report.flatMap(x=>x.chapters).filter(x=>x.ready).length,total_chapters:report.flatMap(x=>x.chapters).length,ready:report.every(x=>x.ready)};
+console.log(JSON.stringify({ok:!failed,summary,grades:report},null,2));
+if(failed)process.exit(1);
