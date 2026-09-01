@@ -40,7 +40,7 @@ AI digunakan sebagai **content production assistant**, bukan sumber kurikulum at
 
 Flow yang direkomendasikan:
 
-`Curriculum v2 → Skill → deterministic constraints → AI candidate generation → validation → Question Bank → App`
+`Curriculum v2 → Skill → deterministic constraints → AI candidate generation → automatic filter → human review → Question Bank → App`
 
 Untuk Matematika gunakan pendekatan hybrid:
 
@@ -48,7 +48,23 @@ Untuk Matematika gunakan pendekatan hybrid:
 - AI membantu wording, konteks soal cerita, distractor, dan penjelasan ramah anak
 - hasil AI wajib divalidasi sebelum masuk question bank publish
 
-Gemini API cocok digunakan pada tahap development untuk structured JSON generation. API key tidak boleh ditaruh di browser; integrasi berikutnya harus melalui server-side/admin workflow.
+Preview Worker saat ini memakai `gemini-3.1-flash-lite` secara server-side. `GEMINI_API_KEY` disimpan sebagai Cloudflare Runtime Secret dan tidak boleh ditaruh di browser atau repository.
+
+Output Gemini selalu berstatus `candidate`. Automatic filter menolak masalah struktur yang jelas seperti stem/opsi duplikat, pertanyaan terlalu panjang, penjelasan terlalu lemah, serta penjelasan nilai tempat yang terlalu bergantung pada arah kiri/kanan. Filter ini **tidak menggantikan validasi kebenaran matematika dan review editor**.
+
+### Grade 3 Math Chapter 1 pilot
+
+Bab `Bilangan sampai 1.000` memiliki 5 skill. Pilot pertama menghasilkan **6 kandidat per skill (30 kandidat total)** untuk review kualitas. Setelah pilot lolos, skill yang kuat dapat diperluas menjadi sekitar 12–16 kandidat per skill sebelum dipilih 8–12 soal approved untuk live bank.
+
+Development endpoints:
+
+- `GET /api/ai/health`
+- `POST /api/ai/generate-questions`
+- `GET /api/ai/models` — diagnostic only
+- `GET /api/ai/self-test?run=grade3-place-value` — small pilot
+- `GET /api/ai/self-test?run=grade3-chapter1` — 30-candidate Chapter 1 review batch
+
+Self-test/diagnostic endpoints adalah development aid dan harus dihapus atau diproteksi sebelum production public launch.
 
 ## Runtime files
 
@@ -60,5 +76,6 @@ Gemini API cocok digunakan pada tahap development untuk structured JSON generati
 - `public/data/ai-question-generation-spec.json` — schema dan guardrail AI generation
 - `public/math-engine-v2.js` — Math lesson/practice/test renderer
 - `public/data/math-content-v1.json` — existing Math module routing
+- `worker.js` — server-side Gemini candidate generation and diagnostics
 
 MVP tetap static/serverless-friendly dan belum membutuhkan database.
