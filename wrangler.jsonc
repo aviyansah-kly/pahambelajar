@@ -1,12 +1,7 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "pahambelajar",
-  "compatibility_date": "2026-08-25",
-  "observability": {
-    "enabled": true
-  },
+  "compatibility_date": "2026-08-27",
   "assets": {
-    "directory": "public",
-    "not_found_handling": "single-page-application"
+    "directory": "./public"
   }
 }
