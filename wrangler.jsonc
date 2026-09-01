@@ -9,11 +9,16 @@
     "directory": "./public",
     "binding": "ASSETS",
     "run_worker_first": [
+      "/",
+      "/index.html",
       "/api/*",
       "/math-engine-v2.js",
       "/data/question-bank-math-g1-v2.json",
       "/data/question-bank-math-g2-v2.json",
-      "/data/question-bank-math-g3-v2.json"
+      "/data/question-bank-math-g3-v2.json",
+      "/data/question-bank-english-g1-v1.json",
+      "/data/question-bank-english-g2-v1.json",
+      "/data/question-bank-english-g3-v1.json"
     ]
   }
 }
