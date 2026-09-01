@@ -1,0 +1,41 @@
+{
+  "version":"2.0-pilot",
+  "updated":"2026-09-01",
+  "grade":3,
+  "phase":"B",
+  "school_profiles":["sd","mi","sdit"],
+  "active_subjects":["Matematika","Bahasa Inggris"],
+  "notes":{
+    "method":"CP nasional menjadi batas kompetensi; organisasi bab divalidasi dengan buku pemerintah, penerbit komersial, dan buku sekolah nyata.",
+    "chapter_order":"Urutan bab adalah struktur PahamBelajar, bukan urutan nasional yang diwajibkan.",
+    "other_subjects":"Tetap tersimpan di curriculum-v1.json dan tidak dihapus."
+  },
+  "semesters":{
+    "1":{
+      "Matematika":[
+        {"id":"m3s1-01","title":"Bilangan sampai 1.000","confidence":"high","skills":["membaca dan menulis bilangan","nilai tempat ratusan-puluhan-satuan","bentuk panjang","membandingkan bilangan","mengurutkan bilangan"]},
+        {"id":"m3s1-02","title":"Penjumlahan dan Pengurangan","confidence":"high","skills":["penjumlahan bersusun","pengurangan bersusun","strategi nilai tempat","soal cerita"]},
+        {"id":"m3s1-03","title":"Perkalian dan Pembagian","confidence":"high","skills":["fakta perkalian","makna pembagian","hubungan perkalian dan pembagian","masalah kontekstual"]},
+        {"id":"m3s1-04","title":"Pecahan Sederhana","confidence":"high","skills":["bagian dari keseluruhan","membaca pecahan","merepresentasikan pecahan","membandingkan pecahan sederhana"]}
+      ],
+      "Bahasa Inggris":[
+        {"id":"e3s1-01","title":"My Friends and I","confidence":"high","skills":["greetings and parting","introductions","numbers 1–10","after-school activities"],"patterns":["Hello, my name is ...","I am ... years old.","My favorite activity is ..."]},
+        {"id":"e3s1-02","title":"All About My Family","confidence":"high","skills":["family members","family origin","he and she","introducing family"],"patterns":["He is my father.","Who is she?","My family is from ..."]},
+        {"id":"e3s1-03","title":"Life at Home","confidence":"high","skills":["activities at home","parts of the house","present continuous introduction","asking location and activity"],"patterns":["I am ... in the ...","Where are you?","What are you doing?"]}
+      ]
+    },
+    "2":{
+      "Matematika":[
+        {"id":"m3s2-01","title":"Pengukuran Panjang dan Berat","confidence":"high","skills":["satuan panjang","satuan berat","membandingkan hasil ukur","masalah pengukuran"]},
+        {"id":"m3s2-02","title":"Keliling Bangun Datar","confidence":"high","skills":["konsep keliling","keliling persegi","keliling persegi panjang","masalah kontekstual"]},
+        {"id":"m3s2-03","title":"Data Sederhana","confidence":"high","skills":["membaca tabel","membaca diagram sederhana","membandingkan data","menjawab pertanyaan dari data"]},
+        {"id":"m3s2-04","title":"Pola Bilangan","confidence":"medium","skills":["mengenali pola","melanjutkan pola","menentukan aturan pola sederhana"]}
+      ],
+      "Bahasa Inggris":[
+        {"id":"e3s2-01","title":"Welcome to My School","confidence":"high","skills":["school facilities","prepositions of place","adjectives","there is and there are"],"patterns":["There is a library.","Is there a classroom?","The classroom is behind the cafeteria."]},
+        {"id":"e3s2-02","title":"Fun in the Classroom","confidence":"high","skills":["classroom objects","numbers 11–50","colors","prepositions of place","possessive adjectives"],"patterns":["The bag is on the table.","There are ... chairs.","Whose bag is this?"]},
+        {"id":"e3s2-03","title":"People at My School","confidence":"high","skills":["school staff","teachers","appearance adjectives","character adjectives"],"patterns":["She is an English teacher.","What is she like?","What does she look like?"]}
+      ]
+    }
+  }
+}
