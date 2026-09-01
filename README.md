@@ -64,7 +64,7 @@ Development endpoints:
 - `GET /api/ai/self-test?run=grade3-place-value` — small pilot
 - `GET /api/ai/self-test?run=grade3-chapter1` — 30-candidate Chapter 1 review batch
 
-Self-test/diagnostic endpoints adalah development aid dan harus dihapus atau diproteksi sebelum production public launch.
+Self-test/diagnostic endpoints hanya untuk preview/development. Mereka bukan API production dan harus dihapus atau diproteksi sebelum public production launch.
 
 ## Runtime files
 
