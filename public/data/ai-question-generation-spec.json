@@ -1,7 +1,7 @@
 {
-  "version": "1.2",
-  "provider_hint": "Gemini API for development; current preview model gemini-3.1-flash-lite",
-  "purpose": "Generate candidate questions from PahamBelajar curriculum skills; never publish AI output without validation and review.",
+  "version": "1.3",
+  "provider_hint": "Gemini API hybrid pipeline: gemini-3.1-flash-lite generator + gemini-3.5-flash reviewer",
+  "purpose": "Generate curriculum-aligned candidate questions, validate them deterministically, then run a stronger AI quality review before curation. AI output is never published directly to children.",
   "input_schema": {
     "grade": "number",
     "phase": "A|B|C",
@@ -13,67 +13,88 @@
     "question_type": "choice by default; text only when explicitly required",
     "count": "number"
   },
-  "output_schema": {
+  "candidate_schema": {
     "id": "string",
     "skill": "string",
     "difficulty": "number",
-    "type": "string",
+    "type": "choice",
     "q": "string",
-    "o": "array, for choice only",
-    "a": "answer index for choice",
+    "o": "4 answer options",
+    "a": "correct answer index",
     "why": "short child-friendly explanation",
-    "source": "gemini-draft",
-    "review_status": "candidate|rejected-auto",
-    "validation": {
-      "curriculum_aligned": "boolean",
-      "single_correct_answer": "boolean",
-      "age_appropriate": "boolean",
-      "input_format_safe": "boolean"
-    }
+    "source": "gemini-draft"
   },
+  "review_statuses": [
+    "rejected-deterministic",
+    "approved-auto",
+    "needs-review",
+    "rejected-ai"
+  ],
+  "pipeline": [
+    "curriculum validation",
+    "gemini-3.1-flash-lite candidate generation",
+    "deterministic format and math checks",
+    "gemini-3.5-flash pedagogical and mathematical review",
+    "approved-auto / needs-review / rejected-ai classification",
+    "candidate-bank curation",
+    "live question bank"
+  ],
   "prompt_rules": [
     "Use only the supplied chapter and skill. Do not introduce material from a higher grade.",
     "Use simple, natural Indonesian suitable for the stated elementary grade.",
-    "Default to multiple choice with 4 concise options for the MVP.",
-    "Avoid free-text answers when the same skill can be assessed reliably with tap-based choices.",
-    "Use free-text only when writing the answer itself is the learning objective, and always provide an explicit example of the expected format.",
+    "Default to multiple choice with exactly 4 concise options for the MVP.",
     "Every multiple-choice question must have exactly one unambiguous correct answer.",
     "Questions in one batch must vary in structure and should not merely swap numbers in the same sentence.",
     "Every question must include why: explain the reasoning in 1-3 short sentences, not merely repeat the answer.",
-    "For mathematics, compute the correct result independently before creating distractors.",
-    "Use terminology consistently: nilai tempat means ratusan/puluhan/satuan; nilai angka means the numeric value of the digit such as 300, 60, or 7.",
-    "Prefer mathematical place-value terms in explanations instead of relying on left/right positional wording.",
+    "For mathematics, compute and verify the correct result before creating distractors.",
+    "Use terminology consistently: nilai tempat means ratusan/puluhan/satuan; nilai digit means numeric value such as 300, 60, or 7.",
+    "Do not explain place value using left/right visual position when mathematical terminology can be used.",
+    "Do not mix neighboring skills merely to create variation.",
     "Distractors must reflect plausible child mistakes but must not be misleading or ambiguous.",
-    "Keep capitalization and punctuation consistent across answer options.",
-    "Avoid trick questions, culturally obscure references, and unnecessary reading load.",
     "Return JSON only and follow the schema exactly."
   ],
-  "auto_filter_policy": {
+  "deterministic_quality_gate": {
     "reject_when": [
-      "duplicate question stem after normalization",
-      "duplicate answer options after normalization",
-      "question stem is too short or too long for the MVP",
-      "explanation is too weak or too short",
-      "place-value explanation relies on directional left/right wording instead of mathematical terms"
+      "duplicate question stem",
+      "duplicate answer options",
+      "question stem too short or too long",
+      "explanation too short",
+      "directional left/right place-value explanation",
+      "skill drift detected by skill-specific guardrail",
+      "place-value answer options are not place names",
+      "ordering question becomes a number-pattern question",
+      "expanded-form question has multiple numerically equivalent correct options",
+      "deterministic math result does not match answer index"
+    ]
+  },
+  "ai_reviewer": {
+    "model": "gemini-3.5-flash",
+    "checks": [
+      "mathematical truth",
+      "single unambiguous correct answer",
+      "skill alignment",
+      "age-appropriate language",
+      "explanation quality",
+      "ambiguity",
+      "batch repetition"
     ],
-    "important_limit": "Automatic filtering checks structure and obvious quality issues. It does not replace mathematical truth validation or human/editor review."
+    "approved_auto_rule": "verdict=approved, score >= 85, and no math_error, skill_drift, or ambiguous flag",
+    "otherwise": "route to needs-review or rejected-ai"
   },
   "chapter_candidate_policy": {
-    "pilot": "Grade 3 Math Chapter 1 generates 6 candidates for each of 5 skills, for a 30-question first-pass batch.",
     "publish": false,
-    "after_pilot": "Review accepted candidates by skill. For skills that pass quality review, expand to roughly 12-16 candidates per skill before selecting an 8-12 question live bank.",
-    "live_bank_rule": "Only reviewed/approved questions can enter the live question bank. Gemini output is never served directly to children."
+    "grade3_chapter1_target": "minimum 8 approved-auto questions per skill before curation",
+    "quality_report_endpoint": "/api/ai/quality-report?run=grade3-chapter1",
+    "details_mode": "/api/ai/quality-report?run=grade3-chapter1&details=1",
+    "live_bank_rule": "Only curated questions may enter the live question bank. approved-auto is a candidate quality status, not direct publication permission."
   },
   "ux_policy": {
     "default_answer_interaction": "tap one answer",
     "choice_behavior": "Selecting an option immediately locks and checks the answer; do not show a separate Kunci Jawaban button.",
-    "after_answer": "Show the explanation and one contextual next action only.",
-    "text_behavior": "If text input is ever used, show an expected-format example and use tolerant normalization before marking it wrong."
+    "after_answer": "Show the explanation and one contextual next action only."
   },
   "math_policy": {
-    "recommended": "hybrid",
-    "deterministic_code_handles": ["numbers", "operations", "correct answer", "range constraints", "difficulty constraints"],
-    "ai_handles": ["wording", "context", "distractors", "child-friendly explanation", "variation"],
-    "reason": "Mathematical truth should not depend solely on model generation."
+    "recommended": "hybrid deterministic + AI",
+    "reason": "Mathematical truth and curriculum boundaries should not depend solely on one model generation pass."
   }
 }
