@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "provider_hint": "Gemini API free tier for development",
   "purpose": "Generate candidate questions from PahamBelajar curriculum skills; never publish AI output without validation.",
   "input_schema": {
@@ -10,7 +10,7 @@
     "chapter_title": "string",
     "skill": "string",
     "difficulty": "1|2|3",
-    "question_type": "choice|text|compare|order|match",
+    "question_type": "choice by default; text only when explicitly required",
     "count": "number"
   },
   "output_schema": {
@@ -20,25 +20,34 @@
     "type": "string",
     "q": "string",
     "o": "array, for choice only",
-    "a": "answer or answer index",
-    "display": "optional display answer",
+    "a": "answer index for choice",
     "why": "short child-friendly explanation",
     "validation": {
       "curriculum_aligned": "boolean",
       "single_correct_answer": "boolean",
-      "age_appropriate": "boolean"
+      "age_appropriate": "boolean",
+      "input_format_safe": "boolean"
     }
   },
   "prompt_rules": [
     "Use only the supplied chapter and skill. Do not introduce material from a higher grade.",
     "Use simple Indonesian suitable for the stated elementary grade.",
-    "Every question must have exactly one unambiguous correct answer unless the type explicitly requires a sequence or set.",
+    "Default to multiple choice with 4 concise options for the MVP.",
+    "Avoid free-text answers when the same skill can be assessed reliably with tap-based choices.",
+    "Use free-text only when writing the answer itself is the learning objective, and always provide an explicit example of the expected format.",
+    "Every multiple-choice question must have exactly one unambiguous correct answer.",
     "Every question must include why: explain the reasoning in 1-3 short sentences, not merely repeat the answer.",
     "For mathematics, compute the correct result independently before creating distractors.",
     "Distractors must reflect plausible child mistakes but must not be misleading or ambiguous.",
     "Avoid trick questions, culturally obscure references, and unnecessary reading load.",
     "Return JSON only and follow the schema exactly."
   ],
+  "ux_policy": {
+    "default_answer_interaction": "tap one answer",
+    "choice_behavior": "Selecting an option immediately locks and checks the answer; do not show a separate Kunci Jawaban button.",
+    "after_answer": "Show the explanation and one contextual next action only.",
+    "text_behavior": "If text input is ever used, show an expected-format example and use tolerant normalization before marking it wrong."
+  },
   "math_policy": {
     "recommended": "hybrid",
     "deterministic_code_handles": ["numbers", "operations", "correct answer", "range constraints", "difficulty constraints"],
