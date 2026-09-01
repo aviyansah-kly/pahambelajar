@@ -1,6 +1,6 @@
 {
   "name": "pahambelajar",
-  "main": "quality-router.js",
+  "main": "app-router.js",
   "compatibility_date": "2026-08-27",
   "secrets": {
     "required": ["GEMINI_API_KEY"]
@@ -10,6 +10,7 @@
     "binding": "ASSETS",
     "run_worker_first": [
       "/api/*",
+      "/math-engine-v2.js",
       "/data/question-bank-math-g1-v2.json",
       "/data/question-bank-math-g2-v2.json",
       "/data/question-bank-math-g3-v2.json"
