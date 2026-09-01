@@ -1,6 +1,6 @@
 {
   "name": "pahambelajar",
-  "main": "worker.js",
+  "main": "worker-router.js",
   "compatibility_date": "2026-08-27",
   "secrets": {
     "required": ["GEMINI_API_KEY"]
