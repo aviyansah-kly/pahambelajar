@@ -1,5 +1,5 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "updated": "2026-09-02",
   "scope": {
     "subject": "Matematika",
@@ -8,81 +8,54 @@
     "source": "core-curriculum-v2.json"
   },
   "quality_policy": {
-    "generator_model": "deterministic-runtime-v2",
+    "generator_model": "deterministic-runtime-v3",
     "reviewer_model": "gemini-3.5-flash",
     "minimum_approved_per_skill": 8,
     "preferred_live_bank_per_skill": "8-10",
     "testing_questions_per_skill": 8,
+    "literacy_mix": "target about 75% contextual/numeracy and 25% direct fluency",
     "publish_ai_output_directly": false,
     "required_status_for_production": "approved-auto + deterministic checks",
     "deterministic_validation_required": true,
-    "notes": "Grades 1-3 now have deterministic runtime banks for testing with 8 questions per skill. This is testing readiness, not production approval. Gemini editorial review and final curation remain required before production publishing."
+    "notes": "Runtime v3 is the active testing source for Grades 1-3. GitHub runtime audit passes all 22 Math chapters for structure, 8 practice questions per skill, quiz coverage, helper separation, grade language metadata, ambiguity checks, and contextual ratio. This remains testing readiness; Gemini editorial review and final curation are still required before production publishing."
   },
   "runtime_strategy": {
     "unit_of_work": "one chapter at a time",
     "priority": ["grade3-semester1", "grade3-semester2", "grade2-semester1", "grade2-semester2", "grade1-semester1", "grade1-semester2"],
     "main_branch_merge": false,
-    "testing_bank_source": "math-bank-runtime-v2.js",
+    "testing_bank_source": "math-bank-runtime-v3.js + math-bank-quality-v3.js",
+    "repo_runtime_audit": "passed",
+    "repo_runtime_audit_workflow": "Audit Math Runtime Banks",
     "production_publish": false
   },
   "coverage": [
-    {
-      "grade": 3,
-      "semester": 1,
-      "chapters": [
-        {"id":"m3s1-01","title":"Bilangan sampai 1.000","skills":5,"status":"ready-for-testing"},
-        {"id":"m3s1-02","title":"Penjumlahan dan Pengurangan","skills":4,"status":"ready-for-testing"},
-        {"id":"m3s1-03","title":"Perkalian dan Pembagian","skills":4,"status":"ready-for-testing"},
-        {"id":"m3s1-04","title":"Pecahan Sederhana","skills":4,"status":"ready-for-testing"}
-      ]
-    },
-    {
-      "grade": 3,
-      "semester": 2,
-      "chapters": [
-        {"id":"m3s2-01","title":"Pengukuran Panjang dan Berat","skills":4,"status":"ready-for-testing"},
-        {"id":"m3s2-02","title":"Keliling Bangun Datar","skills":4,"status":"ready-for-testing"},
-        {"id":"m3s2-03","title":"Data Sederhana","skills":4,"status":"ready-for-testing"},
-        {"id":"m3s2-04","title":"Pola Bilangan","skills":3,"status":"ready-for-testing"}
-      ]
-    },
-    {
-      "grade": 2,
-      "semester": 1,
-      "chapters": [
-        {"id":"m2s1-01","title":"Bilangan sampai 100","skills":4,"status":"ready-for-testing"},
-        {"id":"m2s1-02","title":"Penjumlahan sampai 100","skills":4,"status":"ready-for-testing"},
-        {"id":"m2s1-03","title":"Pengurangan sampai 100","skills":4,"status":"ready-for-testing"},
-        {"id":"m2s1-04","title":"Panjang dan Waktu","skills":4,"status":"ready-for-testing"}
-      ]
-    },
-    {
-      "grade": 2,
-      "semester": 2,
-      "chapters": [
-        {"id":"m2s2-01","title":"Perkalian sebagai Penjumlahan Berulang","skills":3,"status":"ready-for-testing"},
-        {"id":"m2s2-02","title":"Pembagian sebagai Pengelompokan","skills":3,"status":"ready-for-testing"},
-        {"id":"m2s2-03","title":"Uang dan Pengukuran","skills":3,"status":"ready-for-testing"},
-        {"id":"m2s2-04","title":"Bangun Datar dan Ruang Sederhana","skills":3,"status":"ready-for-testing"}
-      ]
-    },
-    {
-      "grade": 1,
-      "semester": 1,
-      "chapters": [
-        {"id":"m1s1-01","title":"Bilangan 0–10","skills":4,"status":"ready-for-testing"},
-        {"id":"m1s1-02","title":"Penjumlahan sampai 10","skills":4,"status":"ready-for-testing"},
-        {"id":"m1s1-03","title":"Pengurangan sampai 10","skills":4,"status":"ready-for-testing"}
-      ]
-    },
-    {
-      "grade": 1,
-      "semester": 2,
-      "chapters": [
-        {"id":"m1s2-01","title":"Bilangan 11–20","skills":4,"status":"ready-for-testing"},
-        {"id":"m1s2-02","title":"Penjumlahan dan Pengurangan sampai 20","skills":4,"status":"ready-for-testing"},
-        {"id":"m1s2-03","title":"Bentuk dan Pengukuran Sederhana","skills":4,"status":"ready-for-testing"}
-      ]
-    }
+    {"grade":3,"semester":1,"chapters":[
+      {"id":"m3s1-01","title":"Bilangan sampai 1.000","skills":5,"status":"ready-for-testing"},
+      {"id":"m3s1-02","title":"Penjumlahan dan Pengurangan","skills":4,"status":"ready-for-testing"},
+      {"id":"m3s1-03","title":"Perkalian dan Pembagian","skills":4,"status":"ready-for-testing"},
+      {"id":"m3s1-04","title":"Pecahan Sederhana","skills":4,"status":"ready-for-testing"}]},
+    {"grade":3,"semester":2,"chapters":[
+      {"id":"m3s2-01","title":"Pengukuran Panjang dan Berat","skills":4,"status":"ready-for-testing"},
+      {"id":"m3s2-02","title":"Keliling Bangun Datar","skills":4,"status":"ready-for-testing"},
+      {"id":"m3s2-03","title":"Data Sederhana","skills":4,"status":"ready-for-testing"},
+      {"id":"m3s2-04","title":"Pola Bilangan","skills":3,"status":"ready-for-testing"}]},
+    {"grade":2,"semester":1,"chapters":[
+      {"id":"m2s1-01","title":"Bilangan sampai 100","skills":4,"status":"ready-for-testing"},
+      {"id":"m2s1-02","title":"Penjumlahan sampai 100","skills":4,"status":"ready-for-testing"},
+      {"id":"m2s1-03","title":"Pengurangan sampai 100","skills":4,"status":"ready-for-testing"},
+      {"id":"m2s1-04","title":"Panjang dan Waktu","skills":4,"status":"ready-for-testing"}]},
+    {"grade":2,"semester":2,"chapters":[
+      {"id":"m2s2-01","title":"Perkalian sebagai Penjumlahan Berulang","skills":3,"status":"ready-for-testing"},
+      {"id":"m2s2-02","title":"Pembagian sebagai Pengelompokan","skills":3,"status":"ready-for-testing"},
+      {"id":"m2s2-03","title":"Uang dan Pengukuran","skills":3,"status":"ready-for-testing"},
+      {"id":"m2s2-04","title":"Bangun Datar dan Ruang Sederhana","skills":3,"status":"ready-for-testing"}]},
+    {"grade":1,"semester":1,"chapters":[
+      {"id":"m1s1-01","title":"Bilangan 0–10","skills":4,"status":"ready-for-testing"},
+      {"id":"m1s1-02","title":"Penjumlahan sampai 10","skills":4,"status":"ready-for-testing"},
+      {"id":"m1s1-03","title":"Pengurangan sampai 10","skills":4,"status":"ready-for-testing"}]},
+    {"grade":1,"semester":2,"chapters":[
+      {"id":"m1s2-01","title":"Bilangan 11–20","skills":4,"status":"ready-for-testing"},
+      {"id":"m1s2-02","title":"Penjumlahan dan Pengurangan sampai 20","skills":4,"status":"ready-for-testing"},
+      {"id":"m1s2-03","title":"Bentuk dan Pengukuran Sederhana","skills":4,"status":"ready-for-testing"}]}
   ]
 }
