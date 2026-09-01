@@ -11,7 +11,8 @@ const contexts=[
 
 const norm=s=>String(s??'').toLowerCase().replace(/\d+/g,'#').replace(/[^a-z#]+/g,' ').trim();
 const ctxFor=(id,i=0)=>contexts[([...String(id)].reduce((a,c)=>a+c.charCodeAt(0),i))%contexts.length];
-const num=v=>Number(String(v??'').replace(/[^\d.-]/g,''));
+const plainNumber=v=>/^\s*-?\d+(?:[.,]\d+)?\s*$/.test(String(v??''));
+const num=v=>Number(String(v??'').trim().replace(/\.(?=\d{3}(?:\D|$))/g,'').replace(',','.').replace(/[^\d.-]/g,''));
 
 function replaceAmbiguousPlaceValue(q){
   if(!/nilai tempat ratusan-puluhan-satuan/.test(q.skill||''))return q;
@@ -95,16 +96,23 @@ function literacyTransform(q,index){
   return q;
 }
 
+function asksForFinalNumericResult(q){
+  const stem=String(q.q||'').toLowerCase();
+  const answer=q.o?.[q.a];
+  if(!plainNumber(answer))return false;
+  if(/^\s*\d+\s*[+−×]\s*\d+\s*=/.test(stem))return true;
+  return /(berapa (?:jumlah|total|sisanya|yang tersisa|yang masih ada)|hasilnya|jumlah seluruhnya|seluruhnya\?|totalnya\?)/i.test(stem);
+}
+
 function equationAnswerMismatch(q){
+  if(!asksForFinalNumericResult(q))return false;
   const why=String(q.why||'');
   const matches=[...why.matchAll(/(\d+)\s*([+−×])\s*(\d+)\s*=\s*(\d+)/g)];
   if(!matches.length)return false;
   const m=matches.at(-1),a=Number(m[1]),op=m[2],b=Number(m[3]),rhs=Number(m[4]);
   const expected=op==='+'?a+b:op==='−'?a-b:a*b;
   if(expected!==rhs)return true;
-  const answer=q.o?.[q.a];
-  const answerNum=num(answer);
-  return Number.isFinite(answerNum)&&answerNum!==rhs;
+  return num(q.o?.[q.a])!==rhs;
 }
 
 function validateBasic(q){
@@ -149,7 +157,7 @@ export function enhanceMathBank(bank){
     chapters[title]={...ch,practice,quiz};
   }
   return {...bank,
-    version:'3.1-literacy-quality',
+    version:'3.2-literacy-quality',
     updated:'2026-09-02',
     generation_policy:{...(bank.generation_policy||{}),literacy_mix:'about 75% contextual + 25% direct fluency',ambiguity_guard:true,basic_runtime_validation:true,answer_index_math_guard:true},
     chapters
