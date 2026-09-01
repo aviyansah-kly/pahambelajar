@@ -1,0 +1,34 @@
+{
+  "version": "1.0",
+  "updated": "2026-09-02",
+  "scope": {"subject":"Bahasa Inggris","grades":[1,2,3],"semesters":[1,2],"source":"core-curriculum-v2.json"},
+  "quality_policy": {
+    "generator_model":"deterministic-runtime-v1",
+    "reviewer_model":"gemini-3.5-flash",
+    "questions_per_skill":8,
+    "choice_first":true,
+    "unique_options_required":true,
+    "single_correct_answer_required":true,
+    "age_language":{"1":"very short concrete recognition","2":"simple sentences with light context","3":"short contextual reading and sentence patterns"},
+    "publish_ai_output_directly":false,
+    "production_publish":false
+  },
+  "runtime_strategy": {
+    "bank_source":"english-bank-runtime.js",
+    "engine":"public/english-engine-v1.js",
+    "launch_patch":"public/english-launch-patch.js",
+    "runtime_routes":["/data/question-bank-english-g1-v1.json","/data/question-bank-english-g2-v1.json","/data/question-bank-english-g3-v1.json"],
+    "repo_implementation":"complete",
+    "preview_runtime_verification":"pending",
+    "gemini_editorial_review":"pending",
+    "main_branch_merge":false
+  },
+  "coverage":[
+    {"grade":1,"semester":1,"chapters":[{"id":"e1s1-01","title":"Hello!","status":"implemented-pending-runtime-review"},{"id":"e1s1-02","title":"My Body","status":"implemented-pending-runtime-review"},{"id":"e1s1-03","title":"Numbers and Colors","status":"implemented-pending-runtime-review"}]},
+    {"grade":1,"semester":2,"chapters":[{"id":"e1s2-01","title":"My Family","status":"implemented-pending-runtime-review"},{"id":"e1s2-02","title":"My Room","status":"implemented-pending-runtime-review"},{"id":"e1s2-03","title":"Shapes and Things Around Me","status":"implemented-pending-runtime-review"}]},
+    {"grade":2,"semester":1,"chapters":[{"id":"e2s1-01","title":"My School","status":"implemented-pending-runtime-review"},{"id":"e2s1-02","title":"My Home","status":"implemented-pending-runtime-review"},{"id":"e2s1-03","title":"Days and Daily Activities","status":"implemented-pending-runtime-review"}]},
+    {"grade":2,"semester":2,"chapters":[{"id":"e2s2-01","title":"Food and Drink","status":"implemented-pending-runtime-review"},{"id":"e2s2-02","title":"Animals Around Us","status":"implemented-pending-runtime-review"},{"id":"e2s2-03","title":"Clothes and Hobbies","status":"implemented-pending-runtime-review"}]},
+    {"grade":3,"semester":1,"chapters":[{"id":"e3s1-01","title":"My Friends and I","status":"implemented-pending-runtime-review"},{"id":"e3s1-02","title":"All About My Family","status":"implemented-pending-runtime-review"},{"id":"e3s1-03","title":"Life at Home","status":"implemented-pending-runtime-review"}]},
+    {"grade":3,"semester":2,"chapters":[{"id":"e3s2-01","title":"Welcome to My School","status":"implemented-pending-runtime-review"},{"id":"e3s2-02","title":"Fun in the Classroom","status":"implemented-pending-runtime-review"},{"id":"e3s2-03","title":"People at My School","status":"implemented-pending-runtime-review"}]}
+  ]
+}
