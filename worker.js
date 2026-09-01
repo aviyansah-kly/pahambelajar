@@ -138,11 +138,32 @@ async function generateQuestions(request, env) {
   }
 }
 
+function grade3SelfTestRequest(request) {
+  return new Request(request.url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      grade: 3,
+      semester: 1,
+      subject: 'Matematika',
+      chapter_id: 'm3s1-01',
+      chapter_title: 'Bilangan sampai 1.000',
+      skill: 'nilai tempat ratusan-puluhan-satuan',
+      difficulty: 1,
+      count: 3
+    })
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === '/api/ai/health') {
       return json({ ok: true, provider: 'Gemini', model: MODEL, configured: Boolean(env.GEMINI_API_KEY) });
+    }
+    if (url.pathname === '/api/ai/self-test' && request.method === 'GET') {
+      if (url.searchParams.get('run') !== 'grade3-place-value') return json({ error: 'Self-test token tidak valid.' }, 403);
+      return generateQuestions(grade3SelfTestRequest(request), env);
     }
     if (url.pathname === '/api/ai/generate-questions') {
       if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
