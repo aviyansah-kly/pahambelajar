@@ -1,6 +1,6 @@
 import fs from 'node:fs';
-import { buildMathBank } from '../math-bank-runtime-v6.js';
-import { buildEnglishBank } from '../english-bank-runtime-v5.js';
+import { buildMathBank } from '../math-bank-runtime-v7.js';
+import { buildEnglishBank } from '../english-bank-runtime-v6.js';
 
 const BASE = process.env.PAHAM_PREVIEW || 'https://feat-chapter-based-two-subjects-paham-belajar.avi-yansah.workers.dev';
 const curriculum = JSON.parse(fs.readFileSync('public/data/core-curriculum-v2.json','utf8'));
