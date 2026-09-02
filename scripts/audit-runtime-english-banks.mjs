@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { buildEnglishBank } from '../english-bank-runtime-v4.js';
+import { buildEnglishBank } from '../english-bank-runtime-v5.js';
 const curriculum=JSON.parse(fs.readFileSync('public/data/core-curriculum-v2.json','utf8'));
 const errors=[];let chapters=0,skills=0,questions=0;
 const norm=v=>String(v??'').trim().toLowerCase().replace(/\s+/g,' ');
