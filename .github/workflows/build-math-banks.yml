@@ -1,4 +1,4 @@
-name: Audit Math Runtime Banks
+name: Audit Runtime Learning Banks
 
 on:
   workflow_dispatch:
@@ -10,7 +10,10 @@ on:
       - 'math-bank-runtime-v2.js'
       - 'math-bank-runtime-v3.js'
       - 'math-bank-quality-v3.js'
+      - 'english-bank-runtime.js'
+      - 'english-bank-runtime-v2.js'
       - 'scripts/audit-runtime-math-banks.mjs'
+      - 'scripts/audit-runtime-english-banks.mjs'
       - 'public/data/core-curriculum-v2.json'
       - '.github/workflows/build-math-banks.yml'
 
@@ -25,5 +28,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: feat/chapter-based-two-subjects
-      - name: Audit active runtime banks
+      - name: Audit Math runtime banks
         run: node scripts/audit-runtime-math-banks.mjs
+      - name: Audit English runtime banks
+        run: node scripts/audit-runtime-english-banks.mjs
