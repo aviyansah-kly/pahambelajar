@@ -1,11 +1,14 @@
 import fs from 'node:fs';
-import { buildEnglishBank } from '../english-bank-runtime-v5.js';
+import { buildEnglishBank } from '../english-bank-runtime-v6.js';
 const curriculum=JSON.parse(fs.readFileSync('public/data/core-curriculum-v2.json','utf8'));
 const errors=[];let chapters=0,skills=0,questions=0;
 const norm=v=>String(v??'').trim().toLowerCase().replace(/\s+/g,' ');
 const words=v=>String(v??'').trim().split(/\s+/).filter(Boolean).length;
 const unnatural=/(\bI name\b|\bMe is\b|\bThis are\b|\bThese is\b|\bI am like\b|\bare froms\b|\bThere be\b|\bThere am\b|\bGive .* me can\b|\bCan some I\b|\bMine activity are\b|\bI favorite activity\b)/i;
 const maxStemWords={1:18,2:26,3:34};
+const dayAfter={Sunday:'Monday',Monday:'Tuesday',Tuesday:'Wednesday',Wednesday:'Thursday',Thursday:'Friday',Friday:'Saturday',Saturday:'Sunday'};
+const dayBefore=Object.fromEntries(Object.entries(dayAfter).map(([a,b])=>[b,a]));
+function expectedDay(stem){let m=stem.match(/day after (Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday)/i);if(m)return dayAfter[m[1][0].toUpperCase()+m[1].slice(1).toLowerCase()];m=stem.match(/day before (Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday)/i);if(m)return dayBefore[m[1][0].toUpperCase()+m[1].slice(1).toLowerCase()];m=stem.match(/Today is (Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday)\. Tomorrow/i);if(m)return dayAfter[m[1]];m=stem.match(/Today is (Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday)\. Yesterday/i);if(m)return dayBefore[m[1]];return null}
 for(const grade of [1,2,3]){
  const bank=buildEnglishBank(curriculum,grade);
  if(!bank){errors.push(`Grade ${grade}: bank missing`);continue}
@@ -27,6 +30,8 @@ for(const grade of [1,2,3]){
     if(unnatural.test((q.o||[]).join(' | ')))errors.push(`${q.id}: deliberately unnatural distractor`);
     const answer=String(q.o?.[q.a]??'').trim();
     if(answer.length>1&&q.q.toLowerCase().includes(`“${answer.toLowerCase()}”`)&&/(matches|means|word)/i.test(q.q))errors.push(`${q.id}: answer leaked into vocabulary stem`);
+    if(String(skill).toLowerCase()==='days of the week'){const expected=expectedDay(q.q);if(expected&&answer!==expected)errors.push(`${q.id}: day sequence answer mismatch, expected ${expected}, got ${answer}`)}
+    if(grade===1&&String(skill).toLowerCase()==='family members'&&/female sibling|male sibling/i.test(q.q))errors.push(`${q.id}: family wording too advanced for Grade 1`);
     const key=norm(q.q).replace(/\d+/g,'#').replace(/[“”"']/g,'');stems.set(key,(stems.get(key)||0)+1);
    }
    for(const [stem,count] of stems)if(count>3)errors.push(`${ch.id}/${skill}: repeated stem pattern ${count} times`);
@@ -35,4 +40,4 @@ for(const grade of [1,2,3]){
  }
 }
 if(errors.length){console.error(`English runtime audit FAILED with ${errors.length} issue(s):`);for(const e of errors)console.error('-',e);process.exit(1)}
-console.log(`English runtime quality audit PASS: ${chapters} chapters, ${skills} skills, ${questions} practice questions; age-level, answer-leak, natural-distractor and repetition guards passed.`);
+console.log(`English runtime quality audit PASS: ${chapters} chapters, ${skills} skills, ${questions} practice questions; age-level, answer-leak, natural-distractor, day-sequence and repetition guards passed.`);
