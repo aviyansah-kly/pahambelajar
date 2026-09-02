@@ -12,6 +12,7 @@ on:
       - 'math-bank-runtime-v4.js'
       - 'math-bank-runtime-v5.js'
       - 'math-bank-runtime-v6.js'
+      - 'math-bank-runtime-v7.js'
       - 'math-bank-quality-v3.js'
       - 'english-bank-runtime.js'
       - 'english-bank-runtime-v2.js'
