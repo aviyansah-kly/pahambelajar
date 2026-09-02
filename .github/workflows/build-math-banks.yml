@@ -9,6 +9,7 @@ on:
       - 'math-bank-runtime.js'
       - 'math-bank-runtime-v2.js'
       - 'math-bank-runtime-v3.js'
+      - 'math-bank-runtime-v4.js'
       - 'math-bank-quality-v3.js'
       - 'english-bank-runtime.js'
       - 'english-bank-runtime-v2.js'
