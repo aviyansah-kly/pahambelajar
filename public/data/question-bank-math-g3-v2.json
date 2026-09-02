@@ -1,0 +1,45 @@
+{
+  "version": "2.1",
+  "updated": "2026-09-01",
+  "grade": 3,
+  "subject": "Matematika",
+  "generation_policy": {
+    "source": "curated-pilot",
+    "ai_ready": true,
+    "default_interaction": "choice",
+    "rule": "AI may draft wording, distractors, and explanations, but arithmetic truth and curriculum alignment must be validated before publishing. For the MVP, practice and quiz questions should default to tap-based multiple choice to avoid answer-format errors."
+  },
+  "chapters": {
+    "Bilangan sampai 1.000": {
+      "chapter_id": "m3s1-01",
+      "skills": [
+        "membaca dan menulis bilangan",
+        "nilai tempat ratusan-puluhan-satuan",
+        "bentuk panjang",
+        "membandingkan bilangan",
+        "mengurutkan bilangan"
+      ],
+      "learn": [
+        ["🔢", "Membaca bilangan", "Bilangan tiga angka terdiri dari ratusan, puluhan, dan satuan.", "347 dibaca tiga ratus empat puluh tujuh."],
+        ["🧩", "Nilai tempat", "Nilai sebuah angka bergantung pada posisinya.", "Pada 472, angka 4 bernilai 400, angka 7 bernilai 70, dan angka 2 bernilai 2."],
+        ["🧱", "Bentuk panjang", "Bilangan dapat diuraikan berdasarkan nilai tempat.", "583 = 500 + 80 + 3."],
+        ["⚖️", "Membandingkan", "Bandingkan angka dari tempat terbesar terlebih dahulu.", "628 > 615 karena ratusannya sama-sama 6, tetapi 2 puluhan lebih besar dari 1 puluhan."],
+        ["🚂", "Mengurutkan", "Urutkan dengan membandingkan nilai ratusan, lalu puluhan, lalu satuan.", "245 < 254 < 425."]
+      ],
+      "practice": [
+        {"id":"m3-n-001","skill":"nilai tempat ratusan-puluhan-satuan","difficulty":1,"type":"choice","q":"Pada bilangan 472, angka 7 menempati nilai tempat ...","o":["ratusan","puluhan","satuan","ribuan"],"a":1,"why":"472 terdiri dari 4 ratusan, 7 puluhan, dan 2 satuan. Jadi angka 7 berada di tempat puluhan."},
+        {"id":"m3-n-002","skill":"nilai tempat ratusan-puluhan-satuan","difficulty":1,"type":"choice","q":"Nilai angka 6 pada bilangan 364 adalah ...","o":["6","60","600","3.600"],"a":1,"why":"Angka 6 berada di tempat puluhan. Enam puluhan bernilai 60."},
+        {"id":"m3-n-003","skill":"bentuk panjang","difficulty":1,"type":"choice","q":"Bentuk panjang dari 583 adalah ...","o":["500 + 80 + 3","500 + 8 + 3","50 + 80 + 3","500 + 30 + 8"],"a":0,"why":"583 terdiri dari 5 ratusan, 8 puluhan, dan 3 satuan, sehingga bentuk panjangnya 500 + 80 + 3."},
+        {"id":"m3-n-004","skill":"membandingkan bilangan","difficulty":1,"type":"choice","q":"Manakah perbandingan yang benar?","o":["628 < 615","628 > 615","628 = 615","628 < 600"],"a":1,"why":"Kedua bilangan memiliki 6 ratusan. Selanjutnya bandingkan puluhan: 2 puluhan lebih besar dari 1 puluhan, jadi 628 > 615."},
+        {"id":"m3-n-005","skill":"mengurutkan bilangan","difficulty":2,"type":"choice","q":"Urutan dari yang terkecil ke terbesar yang benar adalah ...","o":["245, 254, 425, 452","254, 245, 425, 452","245, 425, 254, 452","452, 425, 254, 245"],"a":0,"why":"Bilangan 200-an lebih kecil daripada 400-an. Di antara 245 dan 254, 245 lebih kecil. Di antara 425 dan 452, 425 lebih kecil."}
+      ],
+      "quiz": [
+        {"id":"m3-n-q01","skill":"membaca dan menulis bilangan","difficulty":1,"type":"choice","q":"Bilangan 'tiga ratus dua puluh lima' ditulis ...","o":["235","305","325","352"],"a":2,"why":"Tiga ratus = 300, dua puluh = 20, dan lima = 5. Jadi 300 + 20 + 5 = 325."},
+        {"id":"m3-n-q02","skill":"nilai tempat ratusan-puluhan-satuan","difficulty":1,"type":"choice","q":"Pada bilangan 731, nilai angka 7 adalah ...","o":["7","70","700","7.000"],"a":2,"why":"Angka 7 berada di tempat ratusan, sehingga nilainya 700."},
+        {"id":"m3-n-q03","skill":"bentuk panjang","difficulty":1,"type":"choice","q":"Bentuk panjang dari 406 adalah ...","o":["400 + 60","400 + 6","40 + 6","400 + 60 + 6"],"a":1,"why":"406 memiliki 4 ratusan, 0 puluhan, dan 6 satuan. Karena tidak ada puluhan, bentuk sederhananya 400 + 6."},
+        {"id":"m3-n-q04","skill":"membandingkan bilangan","difficulty":2,"type":"choice","q":"Manakah perbandingan yang benar?","o":["589 > 598","589 < 598","589 = 598","598 < 500"],"a":1,"why":"Ratusannya sama-sama 5. Pada tempat puluhan, 8 lebih kecil dari 9, jadi 589 < 598."},
+        {"id":"m3-n-q05","skill":"mengurutkan bilangan","difficulty":2,"type":"choice","q":"Urutan dari yang terkecil ke terbesar yang benar adalah ...","o":["607, 670, 709, 790","670, 607, 709, 790","607, 709, 670, 790","790, 709, 670, 607"],"a":0,"why":"Bilangan 600-an lebih kecil daripada 700-an. Lalu bandingkan puluhan: 607 < 670 dan 709 < 790."}
+      ]
+    }
+  }
+}

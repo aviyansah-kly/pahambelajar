@@ -1,0 +1,56 @@
+name: Audit Runtime Learning Banks
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/chapter-based-two-subjects
+    paths:
+      - 'math-bank-runtime.js'
+      - 'math-bank-runtime-v2.js'
+      - 'math-bank-runtime-v3.js'
+      - 'math-bank-runtime-v4.js'
+      - 'math-bank-runtime-v5.js'
+      - 'math-bank-runtime-v6.js'
+      - 'math-bank-runtime-v7.js'
+      - 'math-bank-quality-v3.js'
+      - 'english-bank-runtime.js'
+      - 'english-bank-runtime-v2.js'
+      - 'english-bank-runtime-v3.js'
+      - 'english-bank-runtime-v4.js'
+      - 'english-bank-runtime-v5.js'
+      - 'english-bank-runtime-v6.js'
+      - 'quality-router.js'
+      - 'quality-router-v2.js'
+      - 'app-router.js'
+      - 'public/learning-room.css'
+      - 'public/english-engine-v2.js'
+      - 'public/english-launch-patch.js'
+      - 'scripts/audit-runtime-math-banks.mjs'
+      - 'scripts/audit-runtime-english-banks.mjs'
+      - 'scripts/audit-ui-consistency.mjs'
+      - 'scripts/verify-preview-editorial.mjs'
+      - 'public/data/core-curriculum-v2.json'
+      - '.github/workflows/build-math-banks.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/chapter-based-two-subjects
+      - name: Audit Math runtime banks
+        run: node scripts/audit-runtime-math-banks.mjs
+      - name: Audit English runtime banks
+        run: node scripts/audit-runtime-english-banks.mjs
+      - name: Audit UI consistency
+        run: node scripts/audit-ui-consistency.mjs
+      - name: Verify Cloudflare preview and run editorial sweep
+        env:
+          PAHAM_PREVIEW: https://feat-chapter-based-two-subjects-paham-belajar.avi-yansah.workers.dev
+        run: node scripts/verify-preview-editorial.mjs
