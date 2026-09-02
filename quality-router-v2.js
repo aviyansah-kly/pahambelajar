@@ -1,6 +1,6 @@
 import baseRouter from './worker-router.js';
 import { buildMathBank } from './math-bank-runtime-v7.js';
-import { buildEnglishBank } from './english-bank-runtime-v5.js';
+import { buildEnglishBank } from './english-bank-runtime-v6.js';
 const REVIEWER_MODELS=['gemini-3.5-flash','gemini-3.1-flash-lite'];
 const REVIEW_BATCH_SIZE=4;
 const reviewSchema={type:'OBJECT',properties:{reviews:{type:'ARRAY',items:{type:'OBJECT',properties:{id:{type:'STRING'},verdict:{type:'STRING',enum:['approved','needs_review','rejected']},score:{type:'INTEGER',minimum:0,maximum:100},reasons:{type:'ARRAY',items:{type:'STRING'}},flags:{type:'ARRAY',items:{type:'STRING',enum:['math_error','skill_drift','ambiguous','weak_explanation','repetitive','language_issue','none']}}},required:['id','verdict','score','reasons','flags']}}},required:['reviews']};
