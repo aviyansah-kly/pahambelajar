@@ -1,8 +1,18 @@
 import fs from 'node:fs';
+import { buildMathBank } from '../math-bank-runtime-v6.js';
+import { buildEnglishBank } from '../english-bank-runtime-v5.js';
 
 const BASE = process.env.PAHAM_PREVIEW || 'https://feat-chapter-based-two-subjects-paham-belajar.avi-yansah.workers.dev';
 const curriculum = JSON.parse(fs.readFileSync('public/data/core-curriculum-v2.json','utf8'));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+const localVersions = {
+  Matematika: buildMathBank(curriculum, 1)?.version || null,
+  'Bahasa Inggris': buildEnglishBank(curriculum, 1)?.version || null
+};
+
+class HttpError extends Error {
+  constructor(path,status,payload){super(`${path} -> HTTP ${status}: ${JSON.stringify(payload).slice(0,600)}`);this.status=status;this.payload=payload;}
+}
 
 async function getJson(path, timeoutMs = 120000) {
   const controller = new AbortController();
@@ -12,7 +22,7 @@ async function getJson(path, timeoutMs = 120000) {
     const text = await response.text();
     let payload;
     try { payload = JSON.parse(text); } catch { payload = { raw: text.slice(0, 500) }; }
-    if (!response.ok) throw new Error(`${path} -> HTTP ${response.status}: ${JSON.stringify(payload).slice(0,600)}`);
+    if (!response.ok) throw new HttpError(path,response.status,payload);
     return payload;
   } finally { clearTimeout(timer); }
 }
@@ -36,10 +46,15 @@ for (const [subject, grade, path] of bankChecks) {
   const chapterCount = Object.keys(bank.chapters || {}).length;
   console.log(`Bank OK: ${subject} G${grade} version=${bank.version || '-'} chapters=${chapterCount}`);
   if (!chapterCount) throw new Error(`Empty runtime bank: ${subject} G${grade}`);
+  const expectedVersion=localVersions[subject];
+  if(expectedVersion && bank.version!==expectedVersion){
+    throw new Error(`STALE PREVIEW: ${subject} G${grade} serves ${bank.version || '-'} but branch expects ${expectedVersion}. Deploy latest feature branch before editorial QA.`);
+  }
 }
 
 const rows = [];
-for (const subject of ['Matematika','Bahasa Inggris']) {
+let quotaBlocked=false;
+outer: for (const subject of ['Matematika','Bahasa Inggris']) {
   for (const grade of [1,2,3]) {
     for (const semester of [1,2]) {
       const chapters = curriculum?.grades?.[String(grade)]?.semesters?.[String(semester)]?.[subject] || [];
@@ -60,10 +75,16 @@ for (const subject of ['Matematika','Bahasa Inggris']) {
           }
           if(flagged.length>12) console.log(`FLAG ${chapter.id}: ${flagged.length-12} more item(s) omitted from log.`);
         } catch (error) {
-          rows.push({ subject, grade, semester, chapter_id: chapter.id, title: chapter.title, error: error.message });
-          console.error(`REVIEW ERROR ${subject} G${grade} S${semester} ${chapter.id}: ${error.message}`);
+          const msg=error.message||String(error);
+          rows.push({ subject, grade, semester, chapter_id: chapter.id, title: chapter.title, error: msg });
+          console.error(`REVIEW ERROR ${subject} G${grade} S${semester} ${chapter.id}: ${msg}`);
+          if(error.status===429 || /\b429\b|quota/i.test(msg)){
+            quotaBlocked=true;
+            console.error('EDITORIAL PAUSED: Gemini quota/rate limit detected. Stop sweep now and retry on a later run.');
+            break outer;
+          }
         }
-        await sleep(1200);
+        await sleep(1500);
       }
     }
   }
@@ -81,6 +102,7 @@ const totals = rows.reduce((a,r) => {
   return a;
 }, { chapters:0,total:0,approved:0,needs_review:0,rejected:0,production_ready:0,fallback_chapters:0 });
 console.log('\nEDITORIAL SUMMARY');
-console.log(JSON.stringify({ ...totals, errors: errors.length }, null, 2));
+console.log(JSON.stringify({ ...totals, errors: errors.length, quota_blocked: quotaBlocked }, null, 2));
 console.log('\nEDITORIAL_ROWS_JSON=' + JSON.stringify(rows));
+if(quotaBlocked) throw new Error('Editorial QA paused because Gemini quota/rate limit is active; repo and UI audits remain authoritative until quota recovers.');
 if (errors.length) throw new Error(`${errors.length} chapter review request(s) failed`);
