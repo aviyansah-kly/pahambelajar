@@ -14,7 +14,7 @@ class HttpError extends Error {
   constructor(path,status,payload){super(`${path} -> HTTP ${status}: ${JSON.stringify(payload).slice(0,600)}`);this.status=status;this.payload=payload;}
 }
 
-async function getJson(path, timeoutMs = 120000) {
+async function getJson(path, timeoutMs = 60000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -24,6 +24,13 @@ async function getJson(path, timeoutMs = 120000) {
     try { payload = JSON.parse(text); } catch { payload = { raw: text.slice(0, 500) }; }
     if (!response.ok) throw new HttpError(path,response.status,payload);
     return payload;
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      const timeoutError = new Error(`${path} -> timed out after ${timeoutMs}ms`);
+      timeoutError.code = 'PREVIEW_TIMEOUT';
+      throw timeoutError;
+    }
+    throw error;
   } finally { clearTimeout(timer); }
 }
 
@@ -54,6 +61,7 @@ for (const [subject, grade, path] of bankChecks) {
 
 const rows = [];
 let quotaBlocked=false;
+let transientBlocked=false;
 outer: for (const subject of ['Matematika','Bahasa Inggris']) {
   for (const grade of [1,2,3]) {
     for (const semester of [1,2]) {
@@ -62,7 +70,7 @@ outer: for (const subject of ['Matematika','Bahasa Inggris']) {
         const qs = new URLSearchParams({ subject, grade: String(grade), semester: String(semester), chapter_id: chapter.id });
         const path = `/api/ai/runtime-bank-review?${qs}`;
         try {
-          const result = await getJson(path, 180000);
+          const result = await getJson(path, 90000);
           const s = result.summary || {};
           const row = { subject, grade, semester, chapter_id: chapter.id, title: chapter.title, bank_version: result.bank_version, reviewer_model: result.models?.reviewer || null, fallback_used: Boolean(result.models?.fallback_used), total: s.total || 0, approved: s.approved || 0, needs_review: s.needs_review || 0, rejected: s.rejected || 0, production_ready: Boolean(result.production_ready) };
           rows.push(row);
@@ -81,6 +89,11 @@ outer: for (const subject of ['Matematika','Bahasa Inggris']) {
           if(error.status===429 || /\b429\b|quota/i.test(msg)){
             quotaBlocked=true;
             console.error('EDITORIAL PAUSED: Gemini quota/rate limit detected. Stop sweep now and retry on a later run.');
+            break outer;
+          }
+          if(error.code==='PREVIEW_TIMEOUT' || error.status===503 || /\b503\b|timed out/i.test(msg)){
+            transientBlocked=true;
+            console.error('EDITORIAL PAUSED: preview/reviewer is temporarily slow or unavailable. Stop sweep now and retry on a later run.');
             break outer;
           }
         }
@@ -102,7 +115,10 @@ const totals = rows.reduce((a,r) => {
   return a;
 }, { chapters:0,total:0,approved:0,needs_review:0,rejected:0,production_ready:0,fallback_chapters:0 });
 console.log('\nEDITORIAL SUMMARY');
-console.log(JSON.stringify({ ...totals, errors: errors.length, quota_blocked: quotaBlocked }, null, 2));
+console.log(JSON.stringify({ ...totals, errors: errors.length, quota_blocked: quotaBlocked, transient_blocked: transientBlocked }, null, 2));
 console.log('\nEDITORIAL_ROWS_JSON=' + JSON.stringify(rows));
 if(quotaBlocked) throw new Error('Editorial QA paused because Gemini quota/rate limit is active; repo and UI audits remain authoritative until quota recovers.');
+if(transientBlocked) throw new Error('Editorial QA paused because preview/reviewer timed out or returned a transient availability error; retry on a later run.');
 if (errors.length) throw new Error(`${errors.length} chapter review request(s) failed`);
+const notReady = rows.filter(r => !r.error && !r.production_ready);
+if (notReady.length) throw new Error(`${notReady.length} chapter(s) are not editorially production-ready; fix flagged items before UAT.`);
