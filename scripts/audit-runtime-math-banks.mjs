@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { buildMathBank } from '../math-bank-runtime-v5.js';
+import { buildMathBank } from '../math-bank-runtime-v6.js';
 
 const curriculum=JSON.parse(fs.readFileSync('public/data/core-curriculum-v2.json','utf8'));
 const grades=[1,2,3],semesters=[1,2],MIN=8;
