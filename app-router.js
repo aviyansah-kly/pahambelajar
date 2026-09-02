@@ -1,4 +1,4 @@
-import qualityRouter from './quality-router.js';
+import qualityRouter from './quality-router-v2.js';
 import { buildMathBank } from './math-bank-runtime-v3.js';
 function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}})}
 async function loadCurriculum(request,env){const response=await env.ASSETS.fetch(new Request(new URL('/data/core-curriculum-v2.json',request.url)));if(!response.ok)throw new Error('core-curriculum-v2.json tidak tersedia');return response.json()}
