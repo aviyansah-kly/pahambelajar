@@ -1,5 +1,5 @@
 import baseRouter from './worker-router.js';
-import { buildMathBank } from './math-bank-runtime-v4.js';
+import { buildMathBank } from './math-bank-runtime-v5.js';
 import { buildEnglishBank } from './english-bank-runtime-v5.js';
 const REVIEWER_MODELS=['gemini-3.5-flash','gemini-3.1-flash-lite'];
 const REVIEW_BATCH_SIZE=4;
