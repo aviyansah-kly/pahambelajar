@@ -44,19 +44,21 @@ for (const subject of ['Matematika','Bahasa Inggris']) {
     for (const semester of [1,2]) {
       const chapters = curriculum?.grades?.[String(grade)]?.semesters?.[String(semester)]?.[subject] || [];
       for (const chapter of chapters) {
-        const qs = new URLSearchParams({
-          subject,
-          grade: String(grade),
-          semester: String(semester),
-          chapter_id: chapter.id
-        });
+        const qs = new URLSearchParams({ subject, grade: String(grade), semester: String(semester), chapter_id: chapter.id });
         const path = `/api/ai/runtime-bank-review?${qs}`;
         try {
           const result = await getJson(path, 180000);
           const s = result.summary || {};
-          const row = { subject, grade, semester, chapter_id: chapter.id, title: chapter.title, bank_version: result.bank_version, total: s.total || 0, approved: s.approved || 0, needs_review: s.needs_review || 0, rejected: s.rejected || 0, production_ready: Boolean(result.production_ready) };
+          const row = { subject, grade, semester, chapter_id: chapter.id, title: chapter.title, bank_version: result.bank_version, reviewer_model: result.models?.reviewer || null, fallback_used: Boolean(result.models?.fallback_used), total: s.total || 0, approved: s.approved || 0, needs_review: s.needs_review || 0, rejected: s.rejected || 0, production_ready: Boolean(result.production_ready) };
           rows.push(row);
-          console.log(`REVIEW ${subject} G${grade} S${semester} ${chapter.id}: approved=${row.approved}/${row.total}, needs=${row.needs_review}, rejected=${row.rejected}, ready=${row.production_ready}`);
+          console.log(`REVIEW ${subject} G${grade} S${semester} ${chapter.id}: approved=${row.approved}/${row.total}, needs=${row.needs_review}, rejected=${row.rejected}, ready=${row.production_ready}, model=${row.reviewer_model}${row.fallback_used?' (fallback)':''}`);
+          const flagged=(result.results||[]).filter(x=>x.review_status!=='approved-auto');
+          for(const item of flagged.slice(0,12)){
+            const flags=[...(item.review?.deterministic_flags||[]),...(item.review?.flags||[])].filter(x=>x&&x!=='none');
+            const reason=(item.review?.reasons||[]).join(' | ').slice(0,280);
+            console.log(`FLAG ${chapter.id} ${item.id}: status=${item.review_status}; skill=${item.skill}; flags=${flags.join(',')||'-'}; reason=${reason||'-'}; stem=${String(item.q||'').slice(0,220)}`);
+          }
+          if(flagged.length>12) console.log(`FLAG ${chapter.id}: ${flagged.length-12} more item(s) omitted from log.`);
         } catch (error) {
           rows.push({ subject, grade, semester, chapter_id: chapter.id, title: chapter.title, error: error.message });
           console.error(`REVIEW ERROR ${subject} G${grade} S${semester} ${chapter.id}: ${error.message}`);
@@ -75,8 +77,9 @@ const totals = rows.reduce((a,r) => {
   a.needs_review += r.needs_review || 0;
   a.rejected += r.rejected || 0;
   if (r.production_ready) a.production_ready++;
+  if (r.fallback_used) a.fallback_chapters++;
   return a;
-}, { chapters:0,total:0,approved:0,needs_review:0,rejected:0,production_ready:0 });
+}, { chapters:0,total:0,approved:0,needs_review:0,rejected:0,production_ready:0,fallback_chapters:0 });
 console.log('\nEDITORIAL SUMMARY');
 console.log(JSON.stringify({ ...totals, errors: errors.length }, null, 2));
 console.log('\nEDITORIAL_ROWS_JSON=' + JSON.stringify(rows));
