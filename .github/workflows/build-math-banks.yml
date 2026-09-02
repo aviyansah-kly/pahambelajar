@@ -19,6 +19,7 @@ on:
       - 'english-bank-runtime-v3.js'
       - 'english-bank-runtime-v4.js'
       - 'english-bank-runtime-v5.js'
+      - 'english-bank-runtime-v6.js'
       - 'quality-router.js'
       - 'quality-router-v2.js'
       - 'app-router.js'
