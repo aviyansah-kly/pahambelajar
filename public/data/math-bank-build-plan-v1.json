@@ -1,61 +1,56 @@
 {
-  "version": "1.2",
+  "version": "1.3",
   "updated": "2026-09-02",
-  "scope": {
-    "subject": "Matematika",
-    "grades": [1, 2, 3],
-    "semesters": [1, 2],
-    "source": "core-curriculum-v2.json"
-  },
+  "scope": {"subject":"Matematika","grades":[1,2,3],"semesters":[1,2],"source":"core-curriculum-v2.json"},
   "quality_policy": {
-    "generator_model": "deterministic-runtime-v3",
-    "reviewer_model": "gemini-3.5-flash",
-    "minimum_approved_per_skill": 8,
-    "preferred_live_bank_per_skill": "8-10",
-    "testing_questions_per_skill": 8,
-    "literacy_mix": "target about 75% contextual/numeracy and 25% direct fluency",
-    "publish_ai_output_directly": false,
-    "required_status_for_production": "approved-auto + deterministic checks",
-    "deterministic_validation_required": true,
-    "notes": "Runtime v3 is the active testing source for Grades 1-3. GitHub runtime audit passes all 22 Math chapters for structure, 8 practice questions per skill, quiz coverage, helper separation, grade language metadata, ambiguity checks, and contextual ratio. This remains testing readiness; Gemini editorial review and final curation are still required before production publishing."
+    "generator_model":"deterministic-runtime-v3",
+    "reviewer_model":"gemini-3.5-flash-primary-with-3.1-flash-lite-fallback-on-429",
+    "minimum_approved_per_skill":8,
+    "preferred_live_bank_per_skill":"8-10",
+    "testing_questions_per_skill":8,
+    "literacy_mix":"target about 75% contextual/numeracy and 25% direct fluency",
+    "publish_ai_output_directly":false,
+    "required_status_for_production":"approved-auto + deterministic checks",
+    "deterministic_validation_required":true,
+    "notes":"External GitHub runner verified Cloudflare preview health and all Math G1-G3 runtime endpoints on 2026-09-02. First editorial sweep completed nine Math chapters before Gemini 3.5 quota returned HTTP 429. Only m2s1-01 passed 32/32; the other eight reviewed chapters require curation. Remaining chapters stay pending editorial review. No production-ready claim is allowed until all chapters pass."
   },
   "runtime_strategy": {
-    "unit_of_work": "one chapter at a time",
-    "priority": ["grade3-semester1", "grade3-semester2", "grade2-semester1", "grade2-semester2", "grade1-semester1", "grade1-semester2"],
-    "main_branch_merge": false,
-    "testing_bank_source": "math-bank-runtime-v3.js + math-bank-quality-v3.js",
-    "repo_runtime_audit": "passed",
-    "repo_runtime_audit_workflow": "Audit Math Runtime Banks",
-    "production_publish": false
+    "unit_of_work":"one chapter at a time",
+    "main_branch_merge":false,
+    "testing_bank_source":"math-bank-runtime-v3.js + math-bank-quality-v3.js",
+    "repo_runtime_audit":"passed-22-of-22",
+    "preview_runtime_verification":"passed-g1-g2-g3",
+    "editorial_sweep":"partial-quota-limited",
+    "production_publish":false
   },
   "coverage": [
-    {"grade":3,"semester":1,"chapters":[
-      {"id":"m3s1-01","title":"Bilangan sampai 1.000","skills":5,"status":"ready-for-testing"},
-      {"id":"m3s1-02","title":"Penjumlahan dan Pengurangan","skills":4,"status":"ready-for-testing"},
-      {"id":"m3s1-03","title":"Perkalian dan Pembagian","skills":4,"status":"ready-for-testing"},
-      {"id":"m3s1-04","title":"Pecahan Sederhana","skills":4,"status":"ready-for-testing"}]},
-    {"grade":3,"semester":2,"chapters":[
-      {"id":"m3s2-01","title":"Pengukuran Panjang dan Berat","skills":4,"status":"ready-for-testing"},
-      {"id":"m3s2-02","title":"Keliling Bangun Datar","skills":4,"status":"ready-for-testing"},
-      {"id":"m3s2-03","title":"Data Sederhana","skills":4,"status":"ready-for-testing"},
-      {"id":"m3s2-04","title":"Pola Bilangan","skills":3,"status":"ready-for-testing"}]},
-    {"grade":2,"semester":1,"chapters":[
-      {"id":"m2s1-01","title":"Bilangan sampai 100","skills":4,"status":"ready-for-testing"},
-      {"id":"m2s1-02","title":"Penjumlahan sampai 100","skills":4,"status":"ready-for-testing"},
-      {"id":"m2s1-03","title":"Pengurangan sampai 100","skills":4,"status":"ready-for-testing"},
-      {"id":"m2s1-04","title":"Panjang dan Waktu","skills":4,"status":"ready-for-testing"}]},
-    {"grade":2,"semester":2,"chapters":[
-      {"id":"m2s2-01","title":"Perkalian sebagai Penjumlahan Berulang","skills":3,"status":"ready-for-testing"},
-      {"id":"m2s2-02","title":"Pembagian sebagai Pengelompokan","skills":3,"status":"ready-for-testing"},
-      {"id":"m2s2-03","title":"Uang dan Pengukuran","skills":3,"status":"ready-for-testing"},
-      {"id":"m2s2-04","title":"Bangun Datar dan Ruang Sederhana","skills":3,"status":"ready-for-testing"}]},
     {"grade":1,"semester":1,"chapters":[
-      {"id":"m1s1-01","title":"Bilangan 0–10","skills":4,"status":"ready-for-testing"},
-      {"id":"m1s1-02","title":"Penjumlahan sampai 10","skills":4,"status":"ready-for-testing"},
-      {"id":"m1s1-03","title":"Pengurangan sampai 10","skills":4,"status":"ready-for-testing"}]},
+      {"id":"m1s1-01","title":"Bilangan 0–10","skills":4,"status":"editorial-failed-needs-curation","editorial":{"approved":0,"needs_review":8,"rejected":24,"total":32}},
+      {"id":"m1s1-02","title":"Penjumlahan sampai 10","skills":4,"status":"editorial-failed-needs-curation","editorial":{"approved":14,"needs_review":0,"rejected":18,"total":32}},
+      {"id":"m1s1-03","title":"Pengurangan sampai 10","skills":4,"status":"editorial-failed-needs-curation","editorial":{"approved":14,"needs_review":2,"rejected":16,"total":32}}]},
     {"grade":1,"semester":2,"chapters":[
-      {"id":"m1s2-01","title":"Bilangan 11–20","skills":4,"status":"ready-for-testing"},
-      {"id":"m1s2-02","title":"Penjumlahan dan Pengurangan sampai 20","skills":4,"status":"ready-for-testing"},
-      {"id":"m1s2-03","title":"Bentuk dan Pengukuran Sederhana","skills":4,"status":"ready-for-testing"}]}
+      {"id":"m1s2-01","title":"Bilangan 11–20","skills":4,"status":"editorial-failed-needs-curation","editorial":{"approved":16,"needs_review":16,"rejected":0,"total":32}},
+      {"id":"m1s2-02","title":"Penjumlahan dan Pengurangan sampai 20","skills":4,"status":"editorial-failed-needs-curation","editorial":{"approved":25,"needs_review":2,"rejected":5,"total":32}},
+      {"id":"m1s2-03","title":"Bentuk dan Pengukuran Sederhana","skills":4,"status":"editorial-failed-needs-curation","editorial":{"approved":22,"needs_review":10,"rejected":0,"total":32}}]},
+    {"grade":2,"semester":1,"chapters":[
+      {"id":"m2s1-01","title":"Bilangan sampai 100","skills":4,"status":"editorial-approved","editorial":{"approved":32,"needs_review":0,"rejected":0,"total":32}},
+      {"id":"m2s1-02","title":"Penjumlahan sampai 100","skills":4,"status":"editorial-failed-needs-curation","editorial":{"approved":8,"needs_review":24,"rejected":0,"total":32}},
+      {"id":"m2s1-03","title":"Pengurangan sampai 100","skills":4,"status":"editorial-failed-needs-curation","editorial":{"approved":8,"needs_review":0,"rejected":24,"total":32}},
+      {"id":"m2s1-04","title":"Panjang dan Waktu","skills":4,"status":"preview-verified-editorial-pending-quota"}]},
+    {"grade":2,"semester":2,"chapters":[
+      {"id":"m2s2-01","title":"Perkalian sebagai Penjumlahan Berulang","skills":3,"status":"preview-verified-editorial-pending-quota"},
+      {"id":"m2s2-02","title":"Pembagian sebagai Pengelompokan","skills":3,"status":"preview-verified-editorial-pending-quota"},
+      {"id":"m2s2-03","title":"Uang dan Pengukuran","skills":3,"status":"preview-verified-editorial-pending-quota"},
+      {"id":"m2s2-04","title":"Bangun Datar dan Ruang Sederhana","skills":3,"status":"preview-verified-editorial-pending-quota"}]},
+    {"grade":3,"semester":1,"chapters":[
+      {"id":"m3s1-01","title":"Bilangan sampai 1.000","skills":5,"status":"preview-verified-editorial-pending-quota"},
+      {"id":"m3s1-02","title":"Penjumlahan dan Pengurangan","skills":4,"status":"preview-verified-editorial-pending-quota"},
+      {"id":"m3s1-03","title":"Perkalian dan Pembagian","skills":4,"status":"preview-verified-editorial-pending-quota"},
+      {"id":"m3s1-04","title":"Pecahan Sederhana","skills":4,"status":"preview-verified-editorial-pending-quota"}]},
+    {"grade":3,"semester":2,"chapters":[
+      {"id":"m3s2-01","title":"Pengukuran Panjang dan Berat","skills":4,"status":"preview-verified-editorial-pending-quota"},
+      {"id":"m3s2-02","title":"Keliling Bangun Datar","skills":4,"status":"preview-verified-editorial-pending-quota"},
+      {"id":"m3s2-03","title":"Data Sederhana","skills":4,"status":"preview-verified-editorial-pending-quota"},
+      {"id":"m3s2-04","title":"Pola Bilangan","skills":3,"status":"preview-verified-editorial-pending-quota"}]}
   ]
 }
