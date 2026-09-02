@@ -1,6 +1,6 @@
 import baseRouter from './worker-router.js';
 import { buildMathBank } from './math-bank-runtime-v3.js';
-import { buildEnglishBank } from './english-bank-runtime-v4.js';
+import { buildEnglishBank } from './english-bank-runtime-v5.js';
 const REVIEWER_MODELS=['gemini-3.5-flash','gemini-2.5-flash','gemini-3.1-flash-lite'];
 const reviewSchema={type:'OBJECT',properties:{reviews:{type:'ARRAY',items:{type:'OBJECT',properties:{id:{type:'STRING'},verdict:{type:'STRING',enum:['approved','needs_review','rejected']},score:{type:'INTEGER',minimum:0,maximum:100},reasons:{type:'ARRAY',items:{type:'STRING'}},flags:{type:'ARRAY',items:{type:'STRING',enum:['math_error','skill_drift','ambiguous','weak_explanation','repetitive','language_issue','none']}}},required:['id','verdict','score','reasons','flags']}}},required:['reviews']};
 function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}})}
