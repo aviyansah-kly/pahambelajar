@@ -1,5 +1,5 @@
 import qualityRouter from './quality-router-v2.js';
-import { buildMathBank } from './math-bank-runtime-v6.js';
+import { buildMathBank } from './math-bank-runtime-v7.js';
 function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}})}
 async function loadCurriculum(request,env){const response=await env.ASSETS.fetch(new Request(new URL('/data/core-curriculum-v2.json',request.url)));if(!response.ok)throw new Error('core-curriculum-v2.json tidak tersedia');return response.json()}
 async function runtimeBank(request,env,grade){try{const curriculum=await loadCurriculum(request,env);const bank=buildMathBank(curriculum,grade);if(!bank)return json({error:'Kelas tidak ditemukan.'},404);return json(bank)}catch(error){return json({error:error.message||'Bank Matematika gagal dibangun.'},500)}}
