@@ -12,8 +12,11 @@ on:
       - 'math-bank-quality-v3.js'
       - 'english-bank-runtime.js'
       - 'english-bank-runtime-v2.js'
+      - 'quality-router.js'
+      - 'app-router.js'
       - 'scripts/audit-runtime-math-banks.mjs'
       - 'scripts/audit-runtime-english-banks.mjs'
+      - 'scripts/verify-preview-editorial.mjs'
       - 'public/data/core-curriculum-v2.json'
       - '.github/workflows/build-math-banks.yml'
 
@@ -32,3 +35,7 @@ jobs:
         run: node scripts/audit-runtime-math-banks.mjs
       - name: Audit English runtime banks
         run: node scripts/audit-runtime-english-banks.mjs
+      - name: Verify Cloudflare preview and run editorial sweep
+        env:
+          PAHAM_PREVIEW: https://feat-chapter-based-two-subjects-paham-belajar.avi-yansah.workers.dev
+        run: node scripts/verify-preview-editorial.mjs
