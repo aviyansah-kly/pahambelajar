@@ -1,10 +1,10 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "updated": "2026-09-02",
   "scope": {"subject":"Bahasa Inggris","grades":[1,2,3],"semesters":[1,2],"source":"core-curriculum-v2.json"},
   "quality_policy": {
     "generator_model":"deterministic-runtime-v2",
-    "reviewer_model":"gemini-3.5-flash",
+    "reviewer_model":"gemini-3.5-flash-primary-with-3.1-flash-lite-fallback-on-429",
     "questions_per_skill":8,
     "choice_first":true,
     "unique_options_required":true,
@@ -19,17 +19,18 @@
     "launch_patch":"public/english-launch-patch.js",
     "runtime_routes":["/data/question-bank-english-g1-v1.json","/data/question-bank-english-g2-v1.json","/data/question-bank-english-g3-v1.json"],
     "repo_implementation":"complete",
-    "deterministic_ci_audit":"passed",
-    "preview_runtime_verification":"pending-external-access",
-    "gemini_editorial_review":"pending-preview-runtime",
-    "main_branch_merge":false
+    "deterministic_ci_audit":"passed-18-chapters-61-skills-488-practice",
+    "preview_runtime_verification":"passed-g1-g2-g3-external-runner",
+    "gemini_editorial_review":"pending-after-primary-reviewer-quota-429",
+    "main_branch_merge":false,
+    "notes":"External GitHub runner verified Cloudflare preview health and all three English runtime bank endpoints on 2026-09-02. Editorial review did not reach English because Gemini 3.5 quota returned HTTP 429 during Math sweep. Reviewer now keeps Gemini 3.5 as primary and falls back to Gemini 3.1 Flash Lite only on 429."
   },
   "coverage":[
-    {"grade":1,"semester":1,"chapters":[{"id":"e1s1-01","title":"Hello!","status":"repo-audit-passed-pending-runtime-review"},{"id":"e1s1-02","title":"My Body","status":"repo-audit-passed-pending-runtime-review"},{"id":"e1s1-03","title":"Numbers and Colors","status":"repo-audit-passed-pending-runtime-review"}]},
-    {"grade":1,"semester":2,"chapters":[{"id":"e1s2-01","title":"My Family","status":"repo-audit-passed-pending-runtime-review"},{"id":"e1s2-02","title":"My Room","status":"repo-audit-passed-pending-runtime-review"},{"id":"e1s2-03","title":"Shapes and Things Around Me","status":"repo-audit-passed-pending-runtime-review"}]},
-    {"grade":2,"semester":1,"chapters":[{"id":"e2s1-01","title":"My School","status":"repo-audit-passed-pending-runtime-review"},{"id":"e2s1-02","title":"My Home","status":"repo-audit-passed-pending-runtime-review"},{"id":"e2s1-03","title":"Days and Daily Activities","status":"repo-audit-passed-pending-runtime-review"}]},
-    {"grade":2,"semester":2,"chapters":[{"id":"e2s2-01","title":"Food and Drink","status":"repo-audit-passed-pending-runtime-review"},{"id":"e2s2-02","title":"Animals Around Us","status":"repo-audit-passed-pending-runtime-review"},{"id":"e2s2-03","title":"Clothes and Hobbies","status":"repo-audit-passed-pending-runtime-review"}]},
-    {"grade":3,"semester":1,"chapters":[{"id":"e3s1-01","title":"My Friends and I","status":"repo-audit-passed-pending-runtime-review"},{"id":"e3s1-02","title":"All About My Family","status":"repo-audit-passed-pending-runtime-review"},{"id":"e3s1-03","title":"Life at Home","status":"repo-audit-passed-pending-runtime-review"}]},
-    {"grade":3,"semester":2,"chapters":[{"id":"e3s2-01","title":"Welcome to My School","status":"repo-audit-passed-pending-runtime-review"},{"id":"e3s2-02","title":"Fun in the Classroom","status":"repo-audit-passed-pending-runtime-review"},{"id":"e3s2-03","title":"People at My School","status":"repo-audit-passed-pending-runtime-review"}]}
+    {"grade":1,"semester":1,"chapters":[{"id":"e1s1-01","title":"Hello!","status":"preview-verified-editorial-pending-quota"},{"id":"e1s1-02","title":"My Body","status":"preview-verified-editorial-pending-quota"},{"id":"e1s1-03","title":"Numbers and Colors","status":"preview-verified-editorial-pending-quota"}]},
+    {"grade":1,"semester":2,"chapters":[{"id":"e1s2-01","title":"My Family","status":"preview-verified-editorial-pending-quota"},{"id":"e1s2-02","title":"My Room","status":"preview-verified-editorial-pending-quota"},{"id":"e1s2-03","title":"Shapes and Things Around Me","status":"preview-verified-editorial-pending-quota"}]},
+    {"grade":2,"semester":1,"chapters":[{"id":"e2s1-01","title":"My School","status":"preview-verified-editorial-pending-quota"},{"id":"e2s1-02","title":"My Home","status":"preview-verified-editorial-pending-quota"},{"id":"e2s1-03","title":"Days and Daily Activities","status":"preview-verified-editorial-pending-quota"}]},
+    {"grade":2,"semester":2,"chapters":[{"id":"e2s2-01","title":"Food and Drink","status":"preview-verified-editorial-pending-quota"},{"id":"e2s2-02","title":"Animals Around Us","status":"preview-verified-editorial-pending-quota"},{"id":"e2s2-03","title":"Clothes and Hobbies","status":"preview-verified-editorial-pending-quota"}]},
+    {"grade":3,"semester":1,"chapters":[{"id":"e3s1-01","title":"My Friends and I","status":"preview-verified-editorial-pending-quota"},{"id":"e3s1-02","title":"All About My Family","status":"preview-verified-editorial-pending-quota"},{"id":"e3s1-03","title":"Life at Home","status":"preview-verified-editorial-pending-quota"}]},
+    {"grade":3,"semester":2,"chapters":[{"id":"e3s2-01","title":"Welcome to My School","status":"preview-verified-editorial-pending-quota"},{"id":"e3s2-02","title":"Fun in the Classroom","status":"preview-verified-editorial-pending-quota"},{"id":"e3s2-03","title":"People at My School","status":"preview-verified-editorial-pending-quota"}]}
   ]
 }
