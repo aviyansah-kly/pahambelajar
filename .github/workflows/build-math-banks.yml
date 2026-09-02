@@ -12,10 +12,17 @@ on:
       - 'math-bank-quality-v3.js'
       - 'english-bank-runtime.js'
       - 'english-bank-runtime-v2.js'
+      - 'english-bank-runtime-v3.js'
+      - 'english-bank-runtime-v4.js'
       - 'quality-router.js'
+      - 'quality-router-v2.js'
       - 'app-router.js'
+      - 'public/learning-room.css'
+      - 'public/english-engine-v2.js'
+      - 'public/english-launch-patch.js'
       - 'scripts/audit-runtime-math-banks.mjs'
       - 'scripts/audit-runtime-english-banks.mjs'
+      - 'scripts/audit-ui-consistency.mjs'
       - 'scripts/verify-preview-editorial.mjs'
       - 'public/data/core-curriculum-v2.json'
       - '.github/workflows/build-math-banks.yml'
@@ -35,6 +42,8 @@ jobs:
         run: node scripts/audit-runtime-math-banks.mjs
       - name: Audit English runtime banks
         run: node scripts/audit-runtime-english-banks.mjs
+      - name: Audit UI consistency
+        run: node scripts/audit-ui-consistency.mjs
       - name: Verify Cloudflare preview and run editorial sweep
         env:
           PAHAM_PREVIEW: https://feat-chapter-based-two-subjects-paham-belajar.avi-yansah.workers.dev
